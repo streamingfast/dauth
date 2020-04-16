@@ -5,7 +5,7 @@ This library is the authentication interface used as part of [dfuse](https://git
 
 ## Usage
 
-See example usage in [dfuse](https://github.com/dfuse-io/dgraphql).
+See example usage in [dgraphql](https://github.com/dfuse-io/dgraphql).
 
 The following plugins are provided by this package:
 
