@@ -1,6 +1,9 @@
 # dfuse Auth Library
 
-This library is the authentication interface used as part of [dfuse](https://github.com/dfuse-io/dfuse).
+[![reference](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://pkg.go.dev/github.com/dfuse-io/dauth)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+This library is the authentication interface used as part of **[dfuse](https://github.com/dfuse-io/dfuse)**.
 
 
 ## Usage
