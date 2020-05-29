@@ -12,63 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package secret
+package null
 
 import (
 	"context"
-	"errors"
-	"net/url"
 
-	"github.com/dfuse-io/dauth"
+	"github.com/dfuse-io/dauth/authenticator"
 	"go.uber.org/zap"
 )
 
 func init() {
-	// secret://this-is-the-secret-and-fits-in-the-host-field
-	dauth.Register("secret", func(dsn string) (dauth.Authenticator, error) {
-		u, err := url.Parse(dsn)
-		if err != nil {
-			return nil, err
-		}
-
-		secret := u.Host
-		if secret == "" {
-			return nil, errors.New("missing mandatory env vars config for DFUSE_DAUTH_PLUGIN")
-		}
-
-		return newAuthenticator(secret), nil
+	// null://
+	authenticator.Register("null", func(dsn string) (authenticator.Authenticator, error) {
+		return newAuthenticator(), nil
 	})
 }
 
 type authenticatorPlugin struct {
-	secret string
 }
 
-func newAuthenticator(secret string) *authenticatorPlugin {
-	if secret == "" {
-		panic("Secret cannot be empty string")
-	}
-
-	return &authenticatorPlugin{
-		secret: secret,
-	}
+func newAuthenticator() *authenticatorPlugin {
+	return &authenticatorPlugin{}
 }
 
 func (a *authenticatorPlugin) IsAuthenticationTokenRequired() bool {
-	return true
+	return false
 }
 
 func (a *authenticatorPlugin) Check(ctx context.Context, token, ipAddress string) (context.Context, error) {
-	if token == a.secret {
-		ctx = dauth.WithCredentials(ctx, newCredentials(ipAddress))
-		return ctx, nil
-	} else {
-		return ctx, errors.New("Invalid authentication token")
-	}
+	ctx = authenticator.WithCredentials(ctx, newCredentials(ipAddress))
+	return ctx, nil
+
 }
 
 func (a *authenticatorPlugin) GetLogFields(ctx context.Context) []zap.Field {
 	return []zap.Field{
-		zap.String("subject", "secret"),
+		zap.String("subject", "null"),
 	}
 }
