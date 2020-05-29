@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middleware
+package ratelimiter
 
 import (
 	"github.com/dfuse-io/logging"
@@ -22,5 +22,5 @@ import (
 var zlog *zap.Logger
 
 func init() {
-	logging.Register("github.com/dfuse-io/dauth/middleware", &zlog)
+	logging.Register("github.com/dfuse-io/dauth/ratelimiter", &zlog)
 }

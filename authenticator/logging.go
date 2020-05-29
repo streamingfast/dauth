@@ -12,25 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dauth
+package authenticator
 
 import (
-	"net/http"
-	"strings"
+	"github.com/dfuse-io/logging"
+	"go.uber.org/zap"
 )
 
-func RealIPFromRequest(r *http.Request) string {
-	xForwardedFor := r.Header.Get("X-Forwarded-For")
-	return RealIP(xForwardedFor)
-}
+var zlog *zap.Logger
 
-func RealIP(forwardIPs string) string {
-	if forwardIPs != "" {
-		addresses := strings.Split(forwardIPs, ",")
-		if len(addresses) >= 2 {
-			return strings.TrimSpace(addresses[len(addresses)-2])
-		}
-	}
-
-	return "0.0.0.0"
+func init() {
+	logging.Register("github.com/dfuse-io/dauth/authenticator", &zlog)
 }

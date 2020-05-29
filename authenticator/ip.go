@@ -12,25 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dauth
+package authenticator
 
-import "go.uber.org/zap"
+import (
+	"net/http"
+	"strings"
+)
 
-type Credentials interface {
-	GetLogFields() []zap.Field
+func RealIPFromRequest(r *http.Request) string {
+	xForwardedFor := r.Header.Get("X-Forwarded-For")
+	return RealIP(xForwardedFor)
 }
 
-type AnonymousCredentials struct {
-	// MUST implement Credentials
-}
-
-
-func (c *AnonymousCredentials) GetLogFields() []zap.Field {
-	return []zap.Field {
-		zap.String("subject", "anonymous"),
-		zap.String("api_key_id", "anonymous"),
-		zap.String("ip", "0.0.0.0"),
+func RealIP(forwardIPs string) string {
+	if forwardIPs != "" {
+		addresses := strings.Split(forwardIPs, ",")
+		if len(addresses) >= 2 {
+			return strings.TrimSpace(addresses[len(addresses)-2])
+		}
 	}
+
+	return "0.0.0.0"
 }
-
-

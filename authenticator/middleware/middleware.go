@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dfuse-io/dauth"
+	"github.com/dfuse-io/dauth/authenticator"
 	"github.com/dfuse-io/derr"
 	"google.golang.org/grpc/codes"
 )
@@ -28,10 +28,10 @@ import (
 type AuthErrorHandler = func(w http.ResponseWriter, ctx context.Context, err error)
 type AuthMiddleware struct {
 	errorHandler  AuthErrorHandler
-	authenticator dauth.Authenticator
+	authenticator authenticator.Authenticator
 }
 
-func NewAuthMiddleware(authenticator dauth.Authenticator, errorHandler AuthErrorHandler) *AuthMiddleware {
+func NewAuthMiddleware(authenticator authenticator.Authenticator, errorHandler AuthErrorHandler) *AuthMiddleware {
 	return &AuthMiddleware{
 		authenticator: authenticator,
 		errorHandler:  errorHandler,
@@ -51,7 +51,7 @@ func (middleware *AuthMiddleware) Handler(next http.Handler) http.Handler {
 			middleware.errorHandler(w, ctx, derr.Status(codes.Unauthenticated, "required authorization token not found"))
 			return
 		}
-		ip := dauth.RealIPFromRequest(r)
+		ip := authenticator.RealIPFromRequest(r)
 		nextCtx, err := middleware.authenticator.Check(ctx, tokenString, ip)
 		if err != nil {
 			middleware.errorHandler(w, ctx, derr.Statusf(codes.Unauthenticated, "invalid token provided: %s", err.Error()))
