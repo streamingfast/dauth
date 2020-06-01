@@ -6,7 +6,6 @@ import (
 )
 
 type RateLimiter interface {
-	Validate() (bool, error)
 	Gate(id string, method string) (allow bool)
 }
 
@@ -15,6 +14,15 @@ var servicesRegistry []string
 
 func RegisterService(serviceName string) {
 	servicesRegistry = append(servicesRegistry, serviceName)
+}
+
+func Validate(serviceName string) bool {
+	for _, registeredName := range servicesRegistry {
+		if registeredName == serviceName {
+			return true
+		}
+	}
+	return false
 }
 
 func New(config string) (RateLimiter, error) {

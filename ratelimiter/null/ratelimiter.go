@@ -17,10 +17,6 @@ func NewRequestRateLimiter() *RequestRateLimiter {
 	return &RequestRateLimiter{}
 }
 
-func (r *RequestRateLimiter) Validate() (bool, error) {
-	return true, nil
-}
-
 func (r *RequestRateLimiter) Gate(id string, method string) (allow bool) {
 	return true
 }
