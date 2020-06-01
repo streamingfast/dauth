@@ -20,6 +20,10 @@ type credentials struct {
 	ipAddress string
 }
 
+func (c *credentials) GetUserID() string {
+	return ""
+}
+
 func newCredentials(ipAddress string) *credentials {
 	return &credentials{
 		ipAddress: ipAddress,
@@ -27,8 +31,7 @@ func newCredentials(ipAddress string) *credentials {
 }
 
 func (c *credentials) GetLogFields() []zap.Field {
-	return []zap.Field {
+	return []zap.Field{
 		zap.String("ip", c.ipAddress),
 	}
 }
-

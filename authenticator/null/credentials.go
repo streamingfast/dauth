@@ -31,10 +31,7 @@ func newCredentials(ipAddress string) *credentials {
 }
 
 func (c *credentials) GetLogFields() []zap.Field {
-	return []zap.Field {
+	return []zap.Field{
 		zap.String("ip", c.ipAddress),
 	}
 }
-
-
-

@@ -17,9 +17,6 @@ func NewRequestRateLimiter() *RequestRateLimiter {
 	return &RequestRateLimiter{}
 }
 
-func (r *RequestRateLimiter) RegisterService(serviceName string) {
-}
-
 func (r *RequestRateLimiter) Validate() (bool, error) {
 	return true, nil
 }
