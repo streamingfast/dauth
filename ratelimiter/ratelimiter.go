@@ -10,19 +10,14 @@ type RateLimiter interface {
 }
 
 var registry = make(map[string]FactoryFunc)
-var servicesRegistry []string
+var serviceNames []string
 
-func RegisterService(serviceName string) {
-	servicesRegistry = append(servicesRegistry, serviceName)
+func RegisterServices(newNames []string) {
+	serviceNames = append(serviceNames, newNames...)
 }
 
-func Validate(serviceName string) bool {
-	for _, registeredName := range servicesRegistry {
-		if registeredName == serviceName {
-			return true
-		}
-	}
-	return false
+func GetServices() []string {
+	return serviceNames
 }
 
 func New(config string) (RateLimiter, error) {
