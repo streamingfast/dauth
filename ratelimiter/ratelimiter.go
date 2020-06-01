@@ -6,6 +6,8 @@ import (
 )
 
 type RateLimiter interface {
+	RegisterService(serviceName string)
+	Validate() (bool, error)
 	Gate(id string, method string) (allow bool)
 }
 
