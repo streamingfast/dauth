@@ -7,6 +7,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	go.uber.org/zap v1.14.1
 	google.golang.org/grpc v1.26.0
+	gotest.tools v2.2.0+incompatible
 )
 
 go 1.13

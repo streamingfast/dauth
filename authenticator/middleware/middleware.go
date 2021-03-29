@@ -18,6 +18,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"path"
+	"regexp"
 	"strings"
 
 	"github.com/dfuse-io/dauth/authenticator"
@@ -27,15 +29,42 @@ import (
 
 type AuthErrorHandler = func(w http.ResponseWriter, ctx context.Context, err error)
 type AuthMiddleware struct {
-	errorHandler  AuthErrorHandler
-	authenticator authenticator.Authenticator
+	errorHandler     AuthErrorHandler
+	authenticator    authenticator.Authenticator
+	tokenExtractFunc func(*http.Request) string
 }
 
-func NewAuthMiddleware(authenticator authenticator.Authenticator, errorHandler AuthErrorHandler) *AuthMiddleware {
+type Option func(*AuthMiddleware)
+
+func NewAuthMiddleware(authenticator authenticator.Authenticator, errorHandler AuthErrorHandler, options ...[]Option) *AuthMiddleware {
 	return &AuthMiddleware{
 		authenticator: authenticator,
 		errorHandler:  errorHandler,
 	}
+}
+
+func WithCustomTokenExtractor(f func(*http.Request) string) Option {
+	return func(a *AuthMiddleware) {
+		a.tokenExtractFunc = f
+	}
+}
+
+// WithExtractokenFromURLPathLastSegment will try to match a regex in the request path.
+//   If it matches, it truncates the last segment (/...) of the path in the request URL
+//   and returns it as the token.
+func WithExtractTokenFromURLPathLastSegment(regex string) Option {
+	reg := regexp.MustCompile(regex)
+	return WithCustomTokenExtractor(func(r *http.Request) string {
+		if !reg.MatchString(r.URL.Path) {
+			return ""
+		}
+		leftPart, token := path.Split(r.URL.Path)
+		if len(leftPart) > 1 {
+			leftPart = strings.TrimRight(leftPart, "/")
+		}
+		r.URL.Path = leftPart
+		return token
+	})
 }
 
 func (middleware *AuthMiddleware) Handler(next http.Handler) http.Handler {
@@ -47,6 +76,11 @@ func (middleware *AuthMiddleware) Handler(next http.Handler) http.Handler {
 
 		ctx := r.Context()
 		tokenString := fromQueryOrHeader(r)
+		if middleware.tokenExtractFunc != nil {
+			if extractedToken := middleware.tokenExtractFunc(r); extractedToken != "" { // always run this function if it exist, to trim request. Extracted token has precedence over token from Query or Header
+				tokenString = extractedToken
+			}
+		}
 		if middleware.authenticator.IsAuthenticationTokenRequired() && tokenString == "" {
 			middleware.errorHandler(w, ctx, derr.Status(codes.Unauthenticated, "required authorization token not found"))
 			return
