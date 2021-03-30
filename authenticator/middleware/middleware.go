@@ -36,7 +36,7 @@ type AuthMiddleware struct {
 
 type Option func(*AuthMiddleware)
 
-func NewAuthMiddleware(authenticator authenticator.Authenticator, errorHandler AuthErrorHandler, options ...[]Option) *AuthMiddleware {
+func NewAuthMiddleware(authenticator authenticator.Authenticator, errorHandler AuthErrorHandler, options ...Option) *AuthMiddleware {
 	return &AuthMiddleware{
 		authenticator: authenticator,
 		errorHandler:  errorHandler,
