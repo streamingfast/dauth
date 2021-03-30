@@ -18,8 +18,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"path"
-	"regexp"
 	"strings"
 
 	"github.com/dfuse-io/dauth/authenticator"
@@ -37,34 +35,20 @@ type AuthMiddleware struct {
 type Option func(*AuthMiddleware)
 
 func NewAuthMiddleware(authenticator authenticator.Authenticator, errorHandler AuthErrorHandler, options ...Option) *AuthMiddleware {
-	return &AuthMiddleware{
+	a := &AuthMiddleware{
 		authenticator: authenticator,
 		errorHandler:  errorHandler,
 	}
+	for _, opt := range options {
+		opt(a)
+	}
+	return a
 }
 
 func WithCustomTokenExtractor(f func(*http.Request) string) Option {
 	return func(a *AuthMiddleware) {
 		a.tokenExtractFunc = f
 	}
-}
-
-// WithExtractokenFromURLPathLastSegment will try to match a regex in the request path.
-//   If it matches, it truncates the last segment (/...) of the path in the request URL
-//   and returns it as the token.
-func WithExtractTokenFromURLPathLastSegment(regex string) Option {
-	reg := regexp.MustCompile(regex)
-	return WithCustomTokenExtractor(func(r *http.Request) string {
-		if !reg.MatchString(r.URL.Path) {
-			return ""
-		}
-		leftPart, token := path.Split(r.URL.Path)
-		if len(leftPart) > 1 {
-			leftPart = strings.TrimRight(leftPart, "/")
-		}
-		r.URL.Path = leftPart
-		return token
-	})
 }
 
 func (middleware *AuthMiddleware) Handler(next http.Handler) http.Handler {
