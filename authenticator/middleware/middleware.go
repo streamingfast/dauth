@@ -65,10 +65,13 @@ func (middleware *AuthMiddleware) Handler(next http.Handler) http.Handler {
 				tokenString = extractedToken
 			}
 		}
-		if middleware.authenticator.IsAuthenticationTokenRequired() && tokenString == "" {
+
+		tokenRequirement := middleware.authenticator.GetAuthTokenRequirement()
+		if tokenRequirement == authenticator.AuthTokenRequired && tokenString == "" {
 			middleware.errorHandler(w, ctx, derr.Status(codes.Unauthenticated, "required authorization token not found"))
 			return
 		}
+
 		ip := authenticator.RealIPFromRequest(r)
 		nextCtx, err := middleware.authenticator.Check(ctx, tokenString, ip)
 		if err != nil {

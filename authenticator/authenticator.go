@@ -20,8 +20,19 @@ import (
 	"net/url"
 )
 
+//go:generate go-enum --noprefix -f=$GOFILE --marshal --names
+
+//
+// ENUM(
+//   AuthTokenRequired
+//   AuthTokenOptional
+//   AuthTokenDisabled
+// )
+//
+type AuthTokenRequirement uint
+
 type Authenticator interface {
-	IsAuthenticationTokenRequired() bool
+	GetAuthTokenRequirement() AuthTokenRequirement
 	Check(ctx context.Context, token, ipAddress string) (context.Context, error)
 }
 

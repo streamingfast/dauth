@@ -35,14 +35,13 @@ func newAuthenticator() *authenticatorPlugin {
 	return &authenticatorPlugin{}
 }
 
-func (a *authenticatorPlugin) IsAuthenticationTokenRequired() bool {
-	return false
+func (a *authenticatorPlugin) GetAuthTokenRequirement() authenticator.AuthTokenRequirement {
+	return authenticator.AuthTokenDisabled
 }
 
 func (a *authenticatorPlugin) Check(ctx context.Context, token, ipAddress string) (context.Context, error) {
 	ctx = authenticator.WithCredentials(ctx, newCredentials(ipAddress))
 	return ctx, nil
-
 }
 
 func (a *authenticatorPlugin) GetLogFields(ctx context.Context) []zap.Field {
