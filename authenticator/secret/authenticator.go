@@ -63,7 +63,7 @@ func (a *authenticatorPlugin) Check(ctx context.Context, token, ipAddress string
 		ctx = authenticator.WithCredentials(ctx, newCredentials(ipAddress))
 		return ctx, nil
 	}
-	return ctx, errors.New("Invalid authentication token")
+	return ctx, errors.New("invalid authentication token")
 
 }
 
