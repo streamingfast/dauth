@@ -1,4 +1,4 @@
-module github.com/dfuse-io/dauth
+module github.com/streamingfast/dauth
 
 require (
 	github.com/dfuse-io/derr v0.0.0-20200417132224-d333cfd0e9a0

@@ -22,5 +22,5 @@ import (
 var zlog *zap.Logger
 
 func init() {
-	logging.Register("github.com/dfuse-io/dauth/ratelimiter", &zlog)
+	logging.Register("github.com/streamingfast/dauth/ratelimiter", &zlog)
 }
