@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dfuse-io/derr"
+	"github.com/streamingfast/derr"
 	"github.com/streamingfast/dauth/authenticator"
 	"google.golang.org/grpc/codes"
 )
