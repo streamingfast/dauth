@@ -1,10 +1,10 @@
 module github.com/streamingfast/dauth
 
 require (
-	github.com/dfuse-io/logging v0.0.0-20200407175011-14021b7a79af
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/streamingfast/derr v0.0.0-20210810022442-32249850a4fb
+	github.com/streamingfast/derr v0.0.0-20210811180100-9138d738bcec
+	github.com/streamingfast/logging v0.0.0-20210811175431-f3b44b61606a // indirect
 	github.com/stretchr/testify v1.5.1
 	go.uber.org/zap v1.14.1
 	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
