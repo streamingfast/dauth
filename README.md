@@ -14,6 +14,7 @@ The following plugins are provided by this package:
 
 * `null://`
 * `secret://this-is-the-secret-as-the-hostname`
+* `cloud-gcp://projects/your-gcp-project-id/locations/global/keyRings/your-keyring/cryptoKeys/your-key-like-default/cryptoKeyVersions/1?ip_whitelist={127,192.168.1[0-9]}.*`
 
 
 ## Contributing

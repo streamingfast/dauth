@@ -17,14 +17,20 @@ package gcp
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_parseURL(t *testing.T) {
-	cfgURL := "cloud-gcp://projects/foo-project/locations/global/keyRings/bar-keyring/cryptoKeys/default/cryptoKeyVersions/1"
+	cfgURL := "cloud-gcp://projects/foo-project/locations/global/keyRings/bar-keyring/cryptoKeys/default/cryptoKeyVersions/1?ip_whitelist=10.5.*.{1,2,5}"
 
-	kmsKeyPath, err := parseURL(cfgURL)
+	kmsKeyPath, ipWhitelist, err := parseURL(cfgURL)
 
 	require.NoError(t, err)
 	require.Equal(t, "projects/foo-project/locations/global/keyRings/bar-keyring/cryptoKeys/default/cryptoKeyVersions/1", kmsKeyPath)
+
+	assert.True(t, ipWhitelist.Match("10.5.24.5"))
+	assert.False(t, ipWhitelist.Match("10.5.24.7"))  // curly braces
+	assert.False(t, ipWhitelist.Match("110.5.24.2")) // prefix attack
+	assert.False(t, ipWhitelist.Match("10.5.24.54")) // suffix attack
 }

@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gobwas/glob"
 	gcpjwt "github.com/someone1/gcp-jwt-go"
 	"github.com/streamingfast/dauth/authenticator"
 )
@@ -29,29 +30,34 @@ import (
 func init() {
 	// cloud-gcp://projects/projectname/locations/global/keyRings/keyringname/cryptoKeys/default/cryptoKeyVersions/1
 	authenticator.Register("cloud-gcp", func(configURL string) (authenticator.Authenticator, error) {
-		kmsKeyPath, err := parseURL(configURL)
+		kmsKeyPath, ipWhitelist, err := parseURL(configURL)
 		if err != nil {
 			return nil, fmt.Errorf("cloud-gcp factory: %w", err)
 		}
 
-		return newAuthenticator(strings.TrimLeft(kmsKeyPath, "/"))
+		return newAuthenticator(strings.TrimLeft(kmsKeyPath, "/"), ipWhitelist)
 	})
 }
 
-func parseURL(configURL string) (kmsKeyPath string, err error) {
+func parseURL(configURL string) (kmsKeyPath string, ipWhitelist glob.Glob, err error) {
 	urlObject, err := url.Parse(configURL)
 	if err != nil {
 		return
 	}
 	kmsKeyPath = urlObject.Host + urlObject.Path
+
+	values := urlObject.Query()
+	ipWhitelist, err = glob.Compile(values.Get("ip_whitelist"))
+
 	return
 }
 
 type authenticatorPlugin struct {
 	kmsVerificationKeyFunc jwt.Keyfunc
+	ipWhitelist            glob.Glob
 }
 
-func newAuthenticator(kmsKeyPath string) (*authenticatorPlugin, error) {
+func newAuthenticator(kmsKeyPath string, ipWhitelist glob.Glob) (*authenticatorPlugin, error) {
 	kmsVerificationKeyFunc, err := gcpjwt.KMSVerfiyKeyfunc(context.Background(), &gcpjwt.KMSConfig{
 		KeyPath: kmsKeyPath,
 	})
@@ -61,6 +67,7 @@ func newAuthenticator(kmsKeyPath string) (*authenticatorPlugin, error) {
 
 	ap := &authenticatorPlugin{
 		kmsVerificationKeyFunc: kmsVerificationKeyFunc,
+		ipWhitelist:            ipWhitelist,
 	}
 	return ap, nil
 }
@@ -72,6 +79,13 @@ func (a *authenticatorPlugin) GetAuthTokenRequirement() authenticator.AuthTokenR
 func (a *authenticatorPlugin) Check(ctx context.Context, token, ipAddress string) (context.Context, error) {
 	var credentials *Credentials
 
+	if ipAddress != "" && a.ipWhitelist.Match(ipAddress) {
+		credentials = &Credentials{
+			Version: 0,
+			IP:      ipAddress,
+		}
+		return authenticator.WithCredentials(ctx, credentials), nil
+	}
 	// JWT validation
 	credentials = &Credentials{}
 	parsedToken, err := jwt.ParseWithClaims(token, credentials, a.kmsVerificationKeyFunc)

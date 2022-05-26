@@ -2,6 +2,7 @@ module github.com/streamingfast/dauth
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
