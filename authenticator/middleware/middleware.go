@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/streamingfast/derr"
 	"github.com/streamingfast/dauth/authenticator"
+	"github.com/streamingfast/derr"
 	"google.golang.org/grpc/codes"
 )
 
@@ -66,17 +66,13 @@ func (middleware *AuthMiddleware) Handler(next http.Handler) http.Handler {
 			}
 		}
 
-		tokenRequirement := middleware.authenticator.GetAuthTokenRequirement()
-		if tokenRequirement == authenticator.AuthTokenRequired && tokenString == "" {
-			middleware.errorHandler(w, ctx, derr.Status(codes.Unauthenticated, "required authorization token not found"))
-			return
-		}
+		tokenRequired := middleware.authenticator.GetAuthTokenRequirement() == authenticator.AuthTokenRequired
 
 		ip := authenticator.RealIPFromRequest(r)
 		nextCtx, err := middleware.authenticator.Check(ctx, tokenString, ip)
-		if err != nil {
+		if err != nil && tokenRequired {
 			middleware.errorHandler(w, ctx, derr.Statusf(codes.Unauthenticated, "invalid token provided: %s", err.Error()))
-			return
+			return // error
 		}
 
 		next.ServeHTTP(w, r.WithContext(nextCtx))
