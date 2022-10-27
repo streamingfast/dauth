@@ -21,16 +21,25 @@ import (
 
 func RealIPFromRequest(r *http.Request) string {
 	xForwardedFor := r.Header.Get("X-Forwarded-For")
-	return RealIP(xForwardedFor)
-}
-
-func RealIP(forwardIPs string) string {
-	if forwardIPs != "" {
-		addresses := strings.Split(forwardIPs, ",")
-		if len(addresses) >= 2 {
-			return strings.TrimSpace(addresses[len(addresses)-2])
+	if headerIP := realIPFromHeader(xForwardedFor); headerIP != "" {
+		return headerIP
+	}
+	if parts := strings.Split(r.RemoteAddr, ":"); len(parts) != 0 {
+		if parts[0] != "" {
+			return parts[0]
 		}
 	}
-
 	return "0.0.0.0"
+}
+
+func realIPFromHeader(forwardIPs string) string {
+	addresses := strings.Split(forwardIPs, ",")
+	switch len(addresses) {
+	case 0:
+		return ""
+	case 1:
+		return addresses[0]
+	default:
+		return strings.TrimSpace(addresses[len(addresses)-2])
+	}
 }

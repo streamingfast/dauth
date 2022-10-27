@@ -15,48 +15,64 @@
 package authenticator
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_RealIPFromRequest(t *testing.T) {
+func Test_realIPFromHeader(t *testing.T) {
 
 	cases := []struct {
 		name          string
-		xforwardedFor string
+		xforwardedFor []string
+		remoteAddr    string
 		expectedIP    string
 	}{
 		{
 			name:          "sunny path",
-			xforwardedFor: "12.34.56.78, 23.45.67.89",
+			xforwardedFor: []string{"12.34.56.78, 23.45.67.89"},
 			expectedIP:    "12.34.56.78",
 		},
 		{
 			name:          "more then 2 ips",
-			xforwardedFor: "8.8.8.8,12.34.56.78, 23.45.67.89",
+			xforwardedFor: []string{"8.8.8.8,12.34.56.78, 23.45.67.89"},
 			expectedIP:    "12.34.56.78",
 		},
 		{
 			name:          "single ip",
-			xforwardedFor: "12.34.56.78",
-			expectedIP:    "0.0.0.0",
+			xforwardedFor: []string{"12.34.56.78"},
+			expectedIP:    "12.34.56.78",
 		},
 		{
 			name:          "no ip",
-			xforwardedFor: "",
+			xforwardedFor: []string{""},
 			expectedIP:    "0.0.0.0",
 		},
 		{
 			name:          "with junk",
-			xforwardedFor: "foo bar, 12.34.56.78, 23.45.67.89",
+			xforwardedFor: []string{"foo bar, 12.34.56.78, 23.45.67.89"},
 			expectedIP:    "12.34.56.78",
+		},
+		{
+			name:       "from remote addr",
+			remoteAddr: "12.34.56.78",
+			expectedIP: "12.34.56.78",
+		},
+		{
+			name:       "from remote addr with port",
+			remoteAddr: "12.34.56.78:54321",
+			expectedIP: "12.34.56.78",
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			ip := RealIP(c.xforwardedFor)
+			req := &http.Request{
+				Header: map[string][]string{"X-Forwarded-For": c.xforwardedFor},
+			}
+			req.RemoteAddr = c.remoteAddr
+			ip := RealIPFromRequest(req)
 			assert.Equal(t, c.expectedIP, ip)
 		})
 	}
