@@ -19,18 +19,25 @@ import "go.uber.org/zap"
 type Credentials interface {
 	GetLogFields() []zap.Field
 	GetUserID() string
+	GetFeatures() *Features
 }
+
+var _ Credentials = (*AnonymousCredentials)(nil)
 
 type AnonymousCredentials struct {
 	// MUST implement Credentials
 	userID string
-	ip string
+	ip     string
+}
+
+func (c *AnonymousCredentials) GetFeatures() *Features {
+	return &Features{}
 }
 
 func newAnonymousCredentials() *AnonymousCredentials {
 	return &AnonymousCredentials{
 		userID: "anonymous",
-		ip: "0.0.0.0",
+		ip:     "0.0.0.0",
 	}
 }
 
@@ -44,4 +51,8 @@ func (c *AnonymousCredentials) GetLogFields() []zap.Field {
 		zap.String("api_key_id", c.userID),
 		zap.String("ip", c.ip),
 	}
+}
+
+type Features struct {
+	SubstreamParallelization uint64
 }

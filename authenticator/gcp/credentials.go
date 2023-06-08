@@ -15,23 +15,41 @@
 package gcp
 
 import (
+	"github.com/streamingfast/dauth/authenticator"
+	"strconv"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"go.uber.org/zap"
 )
 
+var _ authenticator.Credentials = (*Credentials)(nil)
+
 type Credentials struct {
 	jwt.StandardClaims
 
 	// From JWT
-	Version      int     `json:"v"`
-	Usage        string  `json:"usg"`
-	APIKeyID     string  `json:"aki"`
-	Origin       string  `json:"origin,omitempty"`
-	FeatureFlags []int32 `json:"opts,omitempty"`
+	Version  int    `json:"v"`
+	Usage    string `json:"usg"`
+	APIKeyID string `json:"aki"`
+	Origin   string `json:"origin,omitempty"`
+
+	FeatureFlags   []int32           `json:"opts,omitempty"`
+	FeatureConfigs map[string]string `json:"cfg,omitempty"`
 
 	IP string `json:"-"`
+}
+
+func (c *Credentials) GetFeatures() *authenticator.Features {
+	f := &authenticator.Features{}
+	if value, found := c.FeatureConfigs["SUBSTREAM_PARALLELIZATION"]; found {
+		// TODO: better error handling
+		v, err := strconv.ParseUint(value, 10, 64)
+		if err == nil {
+			f.SubstreamParallelization = v
+		}
+	}
+	return f
 }
 
 func (c *Credentials) GetUserID() string {
