@@ -45,6 +45,7 @@ func (c *AnonymousCredentials) Identification() *Identification {
 	return &Identification{
 		UserId:      "anonymous",
 		ApiKeyId:    "anonymous",
+		ApiKey:      "anonymous",
 		ApiKeyUsage: "anonymous",
 		IpAddress:   "0.0.0.0",
 	}
@@ -65,6 +66,7 @@ type Features struct {
 type Identification struct {
 	UserId      string
 	ApiKeyId    string
+	ApiKey      string
 	ApiKeyUsage string
 	IpAddress   string
 }

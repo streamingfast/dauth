@@ -58,6 +58,7 @@ func (c *Credentials) Identification() *authenticator.Identification {
 	return &authenticator.Identification{
 		UserId:      c.UserID,
 		ApiKeyId:    c.APIKeyID,
+		ApiKey:      c.APIKeyKey,
 		ApiKeyUsage: c.ApiKeyUsage,
 		IpAddress:   c.IP,
 	}
