@@ -25,12 +25,12 @@ type credentials struct {
 	ipAddress string
 }
 
-func (c *credentials) GetFeatures() *authenticator.Features {
+func (c *credentials) Features() *authenticator.Features {
 	return &authenticator.Features{}
 }
 
-func (c *credentials) GetUserID() string {
-	return ""
+func (c *credentials) Identification() *authenticator.Identification {
+	return &authenticator.Identification{}
 }
 
 func newCredentials(ipAddress string) *credentials {

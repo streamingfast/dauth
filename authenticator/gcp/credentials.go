@@ -29,10 +29,12 @@ type Credentials struct {
 	jwt.StandardClaims
 
 	// From JWT
-	Version  int    `json:"v"`
-	Usage    string `json:"usg"`
-	APIKeyID string `json:"aki"`
-	Origin   string `json:"origin,omitempty"`
+	Version     int    `json:"v"`
+	ApiKeyUsage string `json:"usg"`
+	APIKeyID    string `json:"aki"`
+	APIKeyKey   string `json:"akk"`
+	UserID      string `json:"uid"`
+	Origin      string `json:"origin,omitempty"`
 
 	FeatureFlags   []int32           `json:"opts,omitempty"`
 	FeatureConfigs map[string]string `json:"cfg,omitempty"`
@@ -40,7 +42,7 @@ type Credentials struct {
 	IP string `json:"-"`
 }
 
-func (c *Credentials) GetFeatures() *authenticator.Features {
+func (c *Credentials) Features() *authenticator.Features {
 	f := &authenticator.Features{}
 	if value, found := c.FeatureConfigs["SUBSTREAM_PARALLELIZATION"]; found {
 		// TODO: better error handling
@@ -50,6 +52,15 @@ func (c *Credentials) GetFeatures() *authenticator.Features {
 		}
 	}
 	return f
+}
+
+func (c *Credentials) Identification() *authenticator.Identification {
+	return &authenticator.Identification{
+		UserId:      c.UserID,
+		ApiKeyId:    c.APIKeyID,
+		ApiKeyUsage: c.ApiKeyUsage,
+		IpAddress:   c.IP,
+	}
 }
 
 func (c *Credentials) GetUserID() string {
