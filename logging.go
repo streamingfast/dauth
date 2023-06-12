@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ratelimiter
+package dauth
 
 import (
 	"github.com/streamingfast/logging"
 )
 
-var zlog, _ = logging.PackageLogger("dauth", "github.com/streamingfast/dauth/ratelimiter")
+var zlog, _ = logging.PackageLogger("dauth", "github.com/streamingfast/dauth/authenticator")
