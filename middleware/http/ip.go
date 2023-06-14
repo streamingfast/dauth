@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authenticator
+package http
 
 import (
 	"net/http"
 	"strings"
 )
 
-func RealIPFromRequest(r *http.Request) string {
+func realIPFromRequest(r *http.Request) string {
 	xForwardedFor := r.Header.Get("X-Forwarded-For")
 	if headerIP := realIPFromHeader(xForwardedFor); headerIP != "" {
 		return headerIP

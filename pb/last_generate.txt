@@ -1,0 +1,2 @@
+generate.sh - Mon 12 Jun 2023 14:42:42 EDT - julien
+adminadpi/proto revision: e6a5970f5210826815876b810d53fa95ee18a35e

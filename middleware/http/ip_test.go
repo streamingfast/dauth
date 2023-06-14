@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authenticator
+package http
 
 import (
 	"net/http"
@@ -72,7 +72,7 @@ func Test_realIPFromHeader(t *testing.T) {
 				Header: map[string][]string{"X-Forwarded-For": c.xforwardedFor},
 			}
 			req.RemoteAddr = c.remoteAddr
-			ip := RealIPFromRequest(req)
+			ip := realIPFromRequest(req)
 			assert.Equal(t, c.expectedIP, ip)
 		})
 	}
