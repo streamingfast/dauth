@@ -1,21 +1,21 @@
 package grpc
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_parseURL(t *testing.T) {
-
 	tests := []struct {
 		url       string
 		expect    string
 		expectErr bool
 	}{
-
 		{
-			url:       "grpc://localhost9018",
+			url:       "grpc://localhost:9018",
+			expect:    "localhost:9018",
 			expectErr: false,
 		},
 	}

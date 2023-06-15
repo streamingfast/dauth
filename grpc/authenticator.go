@@ -35,7 +35,6 @@ type authenticatorPlugin struct {
 }
 
 func newAuthenticator(serverAddr string) (*authenticatorPlugin, error) {
-
 	conn, err := dgrpc.NewInternalClient(serverAddr)
 	if err != nil {
 		return nil, fmt.Errorf("new auth grpc client: %w", err)

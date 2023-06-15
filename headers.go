@@ -5,3 +5,9 @@ const (
 	SFHeaderApiKeyID string = "X-SF-API-KEY-ID"
 	SFHeaderIP       string = "X-Real-IP"
 )
+
+type Identity struct {
+	UserID   string
+	ApiKeyID string
+	IP       string
+}
