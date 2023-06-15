@@ -11,6 +11,7 @@ service Authentication {
 message AuthRequest {
   string url = 1;
   repeated Header headers = 2;
+  string ip = 3;
 }
 
 message Header {
