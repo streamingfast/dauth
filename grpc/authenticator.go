@@ -3,10 +3,11 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"net/url"
+
 	"github.com/streamingfast/dauth"
 	pbauth "github.com/streamingfast/dauth/pb/sf/authentication/v1"
 	"github.com/streamingfast/dgrpc"
-	"net/url"
 )
 
 func init() {
@@ -46,10 +47,10 @@ func newAuthenticator(serverAddr string) (*authenticatorPlugin, error) {
 	return ap, nil
 }
 
-func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, headers url.Values) (url.Values, error) {
-
+func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error) {
 	req := &pbauth.AuthRequest{
 		Url:     path,
+		Ip:      ipAddress,
 		Headers: nil,
 	}
 
