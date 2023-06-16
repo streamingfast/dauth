@@ -2,15 +2,18 @@ package http
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type testAuthenticators struct {
 }
+
+func (t *testAuthenticators) Close() error { return nil }
 
 func (t *testAuthenticators) Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error) {
 	headers.Set("X-SF-SUBSTREAMS-LL", "987")

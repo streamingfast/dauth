@@ -2,14 +2,19 @@ package server
 
 import (
 	"context"
+	"net/url"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
-	"net/url"
-	"testing"
 )
 
 type testAuthenticators struct {
+}
+
+func (t *testAuthenticators) Close() error {
+	return nil
 }
 
 func (t *testAuthenticators) Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error) {
