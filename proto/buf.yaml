@@ -1,0 +1,13 @@
+version: v1
+name: buf.build/streamingfast/dauth
+deps: []
+build:
+  excludes:
+    - google
+lint:
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE
+

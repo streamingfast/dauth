@@ -1,2 +1,2 @@
-generate.sh - Wed 14 Jun 2023 21:33:49 EDT - julien
-adminadpi/proto revision: d31e818d2ff9fb194f768031f38a5b30e059cbf3
+generate.sh - Fri Jun 16 07:51:08 EDT 2023 - colindickson
+streamingfast/proto revision: a1f92d641c5916fbad12eb841c5b58ba006d2432
