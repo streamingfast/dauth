@@ -3,6 +3,7 @@ module github.com/streamingfast/dauth
 go 1.19
 
 require (
+	github.com/bufbuild/connect-go v1.0.0
 	github.com/streamingfast/derr v0.0.0-20210811180100-9138d738bcec
 	github.com/streamingfast/dgrpc v0.0.0-20230616153353-6bbf5534a79a
 	github.com/streamingfast/logging v0.0.0-20220304214715-bc750a74b424
