@@ -7,14 +7,11 @@ import (
 	"github.com/streamingfast/dauth"
 )
 
-func init() {
+func Register() {
 	dauth.Register("trust", func(configURL string) (dauth.Authenticator, error) {
 		return &trustPlugin{}, nil
 	})
 
-	dauth.Register("null", func(configURL string) (dauth.Authenticator, error) {
-		return &trustPlugin{}, nil
-	})
 }
 
 type trustPlugin struct {

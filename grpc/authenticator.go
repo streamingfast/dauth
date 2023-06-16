@@ -10,8 +10,7 @@ import (
 	"github.com/streamingfast/dgrpc"
 )
 
-func init() {
-	// grpc://localhost:9010
+func Register() {
 	dauth.Register("grpc", func(configURL string) (dauth.Authenticator, error) {
 		serverAddr, err := parseURL(configURL)
 		if err != nil {
