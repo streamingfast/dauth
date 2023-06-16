@@ -17,6 +17,10 @@ func Register() {
 type trustPlugin struct {
 }
 
+func (t *trustPlugin) Close() error {
+	return nil
+}
+
 func (t *trustPlugin) Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error) {
 	return headers, nil
 }

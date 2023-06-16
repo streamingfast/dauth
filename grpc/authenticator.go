@@ -30,7 +30,8 @@ func parseURL(configURL string) (serverAddr string, err error) {
 }
 
 type authenticatorPlugin struct {
-	client pbauth.AuthenticationClient
+	client    pbauth.AuthenticationClient
+	closeFunc func() error
 }
 
 func newAuthenticator(serverAddr string) (*authenticatorPlugin, error) {
@@ -40,9 +41,13 @@ func newAuthenticator(serverAddr string) (*authenticatorPlugin, error) {
 	}
 
 	ap := &authenticatorPlugin{
-		client: pbauth.NewAuthenticationClient(conn),
+		client:    pbauth.NewAuthenticationClient(conn),
+		closeFunc: conn.Close,
 	}
 	return ap, nil
+}
+func (a *authenticatorPlugin) Close() error {
+	return a.closeFunc()
 }
 
 func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error) {

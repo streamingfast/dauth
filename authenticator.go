@@ -7,6 +7,7 @@ import (
 )
 
 type Authenticator interface {
+	Close() error
 	Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error)
 }
 
