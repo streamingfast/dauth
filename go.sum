@@ -93,8 +93,8 @@ github.com/sethvargo/go-retry v0.1.0 h1:8sPqlWannzcReEcYjHSNw9becsiYudcwTD7CasGj
 github.com/sethvargo/go-retry v0.1.0/go.mod h1:JzIOdZqQDNpPkQDmcqgtteAcxFLtYpNF/zJCM1ysDg8=
 github.com/streamingfast/derr v0.0.0-20210811180100-9138d738bcec h1:Dst8eCGnbzBVyZqtjC54an4dpTFwVVDqI4ovz0+FH2k=
 github.com/streamingfast/derr v0.0.0-20210811180100-9138d738bcec/go.mod h1:ulVfui/yGXmPBbt9aAqCWdAjM7YxnZkYHzvQktLfw3M=
-github.com/streamingfast/dgrpc v0.0.0-20230518174031-ba947384f603 h1:vdyZuZla4o/nuxdo60ETp66nw0y5t2o+fwQggg8oo64=
-github.com/streamingfast/dgrpc v0.0.0-20230518174031-ba947384f603/go.mod h1:6sfbWpmE4yo4pzP0VMayTi9JsY91ibuS1ZfagoBmDrM=
+github.com/streamingfast/dgrpc v0.0.0-20230616153353-6bbf5534a79a h1:GQ+18T8kRTl03UHpfMSys2khr+WR14GYLBt9zdp+y7c=
+github.com/streamingfast/dgrpc v0.0.0-20230616153353-6bbf5534a79a/go.mod h1:e0CV14wi/p11xLBcIZgPIyBxy7CcQTqX2498DuQQHTg=
 github.com/streamingfast/logging v0.0.0-20210811175431-f3b44b61606a/go.mod h1:4GdqELhZOXj4xwc4IaBmzofzdErGynnaSzuzxy0ZIBo=
 github.com/streamingfast/logging v0.0.0-20220304214715-bc750a74b424 h1:qKt1W13L7GXL3xqvD6z2ufSkIy/KDm9oGrfurypC78E=
 github.com/streamingfast/logging v0.0.0-20220304214715-bc750a74b424/go.mod h1:VlduQ80JcGJSargkRU4Sg9Xo63wZD/l8A5NC/Uo1/uU=
