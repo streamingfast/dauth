@@ -14,14 +14,14 @@ type testAuthenticators struct {
 
 func (t testAuthenticators) Close() error { return nil }
 
-func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (metadata.MD, error) {
+func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, metadata.MD, error) {
 	out := metadata.MD{}
 	for key, values := range headers {
 		out.Set(key, values...)
 	}
 	out.Set("X-SF-SUBSTREAMS-LL", "987")
 	out.Set("X-Sf-User-Id", "a1b2c3")
-	return out, nil
+	return ctx, out, nil
 }
 
 func Test_validAuth(t *testing.T) {

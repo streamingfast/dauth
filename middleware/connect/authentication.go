@@ -31,7 +31,7 @@ func validateAuth(
 	peerAddr string,
 	authenticator dauth.Authenticator) (*http.Request, error) {
 
-	authenticatedheaders, err := authenticator.Authenticate(ctx, path, headers, extractGRPCRealIP(peerAddr, headers))
+	_, authenticatedheaders, err := authenticator.Authenticate(ctx, path, headers, extractGRPCRealIP(peerAddr, headers))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
 	}

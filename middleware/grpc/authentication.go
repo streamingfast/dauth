@@ -29,10 +29,10 @@ func validateAuth(ctx context.Context, path string, authenticator dauth.Authenti
 		md = EmptyMetadata
 	}
 
-	authenticatedheaders, err := authenticator.Authenticate(ctx, path, url.Values(md), extractGRPCRealIP(ctx, md))
+	ctx, authenticatedheaders, err := authenticator.Authenticate(ctx, path, url.Values(md), extractGRPCRealIP(ctx, md))
 	if err != nil {
 		return ctx, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
 	}
 
-	return metadata.NewIncomingContext(ctx, metadata.MD(authenticatedheaders)), nil
+	return metadata.NewIncomingContext(ctx, authenticatedheaders), nil
 }

@@ -48,7 +48,7 @@ func (m *AuthMiddleware) Handler(next http.Handler) http.Handler {
 func validateAuth(r *http.Request, authenticator dauth.Authenticator) (*http.Request, error) {
 	ctx := r.Context()
 
-	authenticatedHeaders, err := authenticator.Authenticate(ctx, r.URL.String(), r.Header, realIPFromRequest(r))
+	ctx, authenticatedHeaders, err := authenticator.Authenticate(ctx, r.URL.String(), r.Header, realIPFromRequest(r))
 	if err != nil {
 		return nil, err
 	}

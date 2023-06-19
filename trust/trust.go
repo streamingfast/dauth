@@ -16,14 +16,10 @@ func Register() {
 type trustPlugin struct {
 }
 
-func (t *trustPlugin) Close() error {
-	return nil
-}
-
-func (t *trustPlugin) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (metadata.MD, error) {
+func (t *trustPlugin) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, metadata.MD, error) {
 	out := metadata.MD{}
 	for key, values := range headers {
 		out.Set(key, values...)
 	}
-	return headers, nil
+	return ctx, headers, nil
 }
