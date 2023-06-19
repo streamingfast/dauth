@@ -34,9 +34,5 @@ func validateAuth(ctx context.Context, path string, authenticator dauth.Authenti
 		return ctx, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
 	}
 
-	for key, values := range authenticatedheaders {
-		md.Set(key, values...)
-	}
-
-	return metadata.NewIncomingContext(ctx, md), nil
+	return metadata.NewIncomingContext(ctx, metadata.MD(authenticatedheaders)), nil
 }

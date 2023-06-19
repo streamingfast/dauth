@@ -5,8 +5,8 @@ import (
 	"github.com/streamingfast/dauth"
 	"github.com/streamingfast/derr"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"net/http"
-	"net/url"
 )
 
 type AuthErrorHandler = func(w http.ResponseWriter, ctx context.Context, err error)
@@ -35,28 +35,38 @@ func (m *AuthMiddleware) Handler(next http.Handler) http.Handler {
 			return
 		}
 		ctx := r.Context()
-
-		if err := validateAuth(r, m.authenticator); err != nil {
+		request, err := validateAuth(r, m.authenticator)
+		if err != nil {
 			m.errorHandler(w, ctx, derr.Statusf(codes.Unauthenticated, "authenticate : %s", err.Error()))
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, request)
 	})
 }
 
-func validateAuth(r *http.Request, authenticator dauth.Authenticator) error {
+func validateAuth(r *http.Request, authenticator dauth.Authenticator) (*http.Request, error) {
 	ctx := r.Context()
 
-	authenticatedHeaders, err := authenticator.Authenticate(ctx, r.URL.String(), url.Values(r.Header), realIPFromRequest(r))
+	authenticatedHeaders, err := authenticator.Authenticate(ctx, r.URL.String(), r.Header, realIPFromRequest(r))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	ctx = metadata.NewIncomingContext(ctx, authenticatedHeaders)
+	newRequest := r.Clone(ctx)
+
+	// We cannot simply cast the metadata.MD into an http.Header since they
+	// do not format the keys the same (lowercase vs Capitalized)
+	httpHeaders := http.Header{}
+
 	for key, values := range authenticatedHeaders {
-		for _, value := range values {
-			r.Header.Set(key, value)
+		for _, v := range values {
+			httpHeaders.Set(key, v)
 		}
+
 	}
-	return nil
+
+	newRequest.Header = httpHeaders
+	return newRequest, nil
 }

@@ -3,7 +3,9 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/metadata"
 	"net/url"
+	"strings"
 
 	"github.com/streamingfast/dauth"
 	pbauth "github.com/streamingfast/dauth/pb/sf/authentication/v1"
@@ -50,7 +52,7 @@ func (a *authenticatorPlugin) Close() error {
 	return a.closeFunc()
 }
 
-func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error) {
+func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (metadata.MD, error) {
 	req := &pbauth.AuthRequest{
 		Url:     path,
 		Ip:      ipAddress,
@@ -60,7 +62,7 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 	for key, values := range headers {
 		for _, value := range values {
 			req.Headers = append(req.Headers, &pbauth.Header{
-				Key:   key,
+				Key:   strings.ToLower(key),
 				Value: value,
 			})
 		}
@@ -71,7 +73,7 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 		return nil, fmt.Errorf("auth grpc service failed: %w", err)
 	}
 
-	out := url.Values{}
+	out := metadata.MD{}
 	for _, authenticatedHeader := range resp.AuthenticatedHeaders {
 		out.Set(authenticatedHeader.Key, authenticatedHeader.Value)
 	}

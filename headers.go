@@ -1,7 +1,7 @@
 package dauth
 
 const (
-	SFHeaderUserID   string = "X-SF-USER-ID"
-	SFHeaderApiKeyID string = "X-SF-API-KEY-ID"
-	SFHeaderIP       string = "X-Real-IP"
+	SFHeaderUserID   string = "X-Sf-User-Id"
+	SFHeaderApiKeyID string = "X-Sf-Api-Key-Id"
+	SFHeaderIP       string = "X-Real-Ip"
 )

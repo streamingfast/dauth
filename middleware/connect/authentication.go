@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"net/http"
-	"net/url"
 	"regexp"
 
 	"github.com/streamingfast/dauth"
@@ -30,12 +29,13 @@ func validateAuth(
 	path string,
 	headers http.Header,
 	peerAddr string,
-	authenticator dauth.Authenticator) (url.Values, error) {
+	authenticator dauth.Authenticator) (*http.Request, error) {
 
-	authenticatedheaders, err := authenticator.Authenticate(ctx, path, url.Values(headers), extractGRPCRealIP(peerAddr, headers))
+	authenticatedheaders, err := authenticator.Authenticate(ctx, path, headers, extractGRPCRealIP(peerAddr, headers))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
 	}
+	ctx = metadata.NewIncomingContext(ctx, authenticatedHeaders)
 
 	return authenticatedheaders, nil
 }

@@ -2,8 +2,8 @@ package http
 
 import (
 	"context"
+	"google.golang.org/grpc/metadata"
 	"net/http"
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,12 +13,16 @@ import (
 type testAuthenticators struct {
 }
 
-func (t *testAuthenticators) Close() error { return nil }
+func (t testAuthenticators) Close() error { return nil }
 
-func (t *testAuthenticators) Authenticate(ctx context.Context, path string, headers url.Values, ipAddress string) (url.Values, error) {
-	headers.Set("X-SF-SUBSTREAMS-LL", "987")
-	headers.Set("X-Sf-User-Id", "a1b2c3")
-	return headers, nil
+func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (metadata.MD, error) {
+	out := metadata.MD{}
+	for key, values := range headers {
+		out.Set(key, values...)
+	}
+	out.Set("X-SF-SUBSTREAMS-LL", "987")
+	out.Set("X-Sf-User-Id", "a1b2c3")
+	return out, nil
 }
 
 func TestAuthMiddleware_validateAuth(t *testing.T) {
@@ -29,8 +33,9 @@ func TestAuthMiddleware_validateAuth(t *testing.T) {
 	request.Header.Set("X-SF-SUBSTREAMS-LL", "123")
 
 	authenticator := &testAuthenticators{}
-	require.NoError(t, validateAuth(request, authenticator))
+	newRequest, err := validateAuth(request, authenticator)
+	require.NoError(t, err)
 
-	assert.Equal(t, "a1b2c3", request.Header.Get("X-SF-USER-ID"))
-	assert.Equal(t, "987", request.Header.Get("x-sf-substreams-ll"))
+	assert.Equal(t, "a1b2c3", newRequest.Header.Get("X-SF-USER-ID"))
+	assert.Equal(t, "987", newRequest.Header.Get("x-sf-substreams-ll"))
 }
