@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"google.golang.org/grpc/metadata"
 	"net/http"
 	"testing"
+
+	"google.golang.org/grpc/metadata"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func (t testAuthenticators) Authenticate(ctx context.Context, path string, heade
 	}
 	out.Set("X-SF-SUBSTREAMS-LL", "987")
 	out.Set("X-Sf-User-Id", "a1b2c3")
-	return ctx, out, nil
+	return metadata.NewIncomingContext(ctx, out), out, nil
 }
 
 func Test_validAuth(t *testing.T) {
@@ -35,11 +35,15 @@ func Test_validAuth(t *testing.T) {
 	//auth,:= metadata.NewIncomingContext(context.Background(), headers)
 	authenticator := &testAuthenticators{}
 
-	ctx := context.Background()
-	newHeaders, err := validateAuth(ctx, "/package.service/method", headers, "127.0.0.2", authenticator)
-	fmt.Println("new headers are", newHeaders)
+	ctx, newHeaders, err := validateAuth(context.Background(), "/package.service/method", headers, "127.0.0.2", authenticator)
 	require.NoError(t, err)
 
-	assert.Equal(t, "a1b2c3", newHeaders.Get("X-Sf-User-Id"))
-	assert.Equal(t, "987", newHeaders.Get("X-SF-SUBSTREAMS-LL"))
+	assert.Equal(t, []string{"a1b2c3"}, newHeaders.Get("X-SF-USER-ID"))
+	assert.Equal(t, []string{"987"}, newHeaders.Get("x-sf-substreams-ll"))
+
+	md, found := metadata.FromIncomingContext(ctx)
+	assert.True(t, found)
+
+	assert.Equal(t, []string{"a1b2c3"}, md.Get("X-SF-USER-ID"))
+	assert.Equal(t, []string{"987"}, md.Get("x-sf-substreams-ll"))
 }

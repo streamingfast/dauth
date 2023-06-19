@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package http
+package middleware
 
 import (
 	"net/http"
@@ -37,6 +37,16 @@ func Test_realIPFromHeader(t *testing.T) {
 		{
 			name:          "more then 2 ips",
 			xforwardedFor: []string{"8.8.8.8,12.34.56.78, 23.45.67.89"},
+			expectedIP:    "12.34.56.78",
+		},
+		{
+			name:          "more then 2 ips as different headers",
+			xforwardedFor: []string{"8.8.8.8", "12.34.56.78", "23.45.67.89"},
+			expectedIP:    "12.34.56.78",
+		},
+		{
+			name:          "more then 2 ips as different headers, mixed",
+			xforwardedFor: []string{"8.8.8.8", "12.34.56.78, 23.45.67.89"},
 			expectedIP:    "12.34.56.78",
 		},
 		{
@@ -72,7 +82,7 @@ func Test_realIPFromHeader(t *testing.T) {
 				Header: map[string][]string{"X-Forwarded-For": c.xforwardedFor},
 			}
 			req.RemoteAddr = c.remoteAddr
-			ip := realIPFromRequest(req)
+			ip := RealIP(c.remoteAddr, req.Header)
 			assert.Equal(t, c.expectedIP, ip)
 		})
 	}

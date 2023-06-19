@@ -2,6 +2,7 @@ package trust
 
 import (
 	"context"
+
 	"github.com/streamingfast/dauth"
 	"google.golang.org/grpc/metadata"
 )
@@ -21,5 +22,5 @@ func (t *trustPlugin) Authenticate(ctx context.Context, path string, headers map
 	for key, values := range headers {
 		out.Set(key, values...)
 	}
-	return ctx, headers, nil
+	return metadata.NewIncomingContext(ctx, out), headers, nil
 }

@@ -25,11 +25,15 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		headers := req.Header()
 		path := req.Spec().Procedure
 
-		newHeaders, err := validateAuth(ctx, path, headers, peerAddr, i.check)
+		childCtx, newHeaders, err := validateAuth(ctx, path, headers, peerAddr, i.check)
 		if err != nil {
 			return nil, err
 		}
 
+		// wipe existing headers, only keep the ones that passthrough auth
+		for h := range headers {
+			req.Header().Del(h)
+		}
 		// tweak the headers on the request
 		for k, v := range newHeaders {
 			first := true
@@ -43,7 +47,7 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			}
 		}
 
-		return next(ctx, req)
+		return next(childCtx, req)
 	}
 }
 
@@ -54,11 +58,15 @@ func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 		headers := conn.RequestHeader()
 		path := conn.Spec().Procedure
 
-		newHeaders, err := validateAuth(ctx, path, headers, peerAddr, i.check)
+		childCtx, newHeaders, err := validateAuth(ctx, path, headers, peerAddr, i.check)
 		if err != nil {
 			return err
 		}
 
+		// wipe existing headers, only keep the ones that passthrough auth
+		for h := range headers {
+			conn.RequestHeader().Del(h)
+		}
 		// tweak the headers on the request
 		for k, v := range newHeaders {
 			first := true
@@ -72,7 +80,7 @@ func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 			}
 		}
 
-		return next(ctx, conn)
+		return next(childCtx, conn)
 	}
 }
 

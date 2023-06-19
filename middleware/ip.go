@@ -1,13 +1,37 @@
-package server
+package middleware
 
 import (
-	"net/http"
+	"regexp"
 	"strings"
 )
 
-func extractGRPCRealIP(peerAddr string, headers http.Header) string {
-	xForwardedFor := headers["x-forwarded-for"]
-	if len(xForwardedFor) > 0 {
+var portSuffixRegex = regexp.MustCompile(`:[0-9]{2,5}$`)
+
+// RealIP tries to get the source IP from X-Forwarded-For headers or from the peerAddress
+func RealIP(peerAddr string, headers map[string][]string) string {
+	var xForwardedFor []string
+	for k := range headers {
+		if strings.ToLower(k) == "x-forwarded-for" {
+			for _, values := range headers[k] {
+				for _, value := range strings.Split(values, ",") {
+					if stripped := strings.TrimSpace(value); stripped != "" {
+						xForwardedFor = append(xForwardedFor, stripped)
+					}
+				}
+			}
+			break
+		}
+	}
+
+	switch len(xForwardedFor) {
+	case 0:
+		stripped := portSuffixRegex.ReplaceAllLiteralString(peerAddr, "")
+		if stripped != "" {
+			return stripped
+		}
+		return "0.0.0.0"
+
+	case 1, 2:
 		// When behind a Google Load Balancer, the only two values that we can
 		// be sure about are the `n - 2` and `n - 1` (so the last two values
 		// in the array). The very last value (`n - 1`) is the Google IP and the
@@ -24,16 +48,15 @@ func extractGRPCRealIP(peerAddr string, headers http.Header) string {
 		// anything that comes in and looks like an IP.
 		//
 		// @see https://cloud.google.com/load-balancing/docs/https#x-forwarded-for_header
-		if len(xForwardedFor) <= 2 { // 1 or 2
-			return strings.TrimSpace(xForwardedFor[0])
-		}
 
+		return xForwardedFor[0]
+
+	default:
 		// There is more than 2 addresses, only the element at `n - 2` should be
 		// considered, all others cannot be trusted (assuming we got `[a, b, c, d]``,
 		// we want to pick element `c` which is at index 2 here so `len(elements) - 2`
 		// gives the correct value)
-		return strings.TrimSpace(xForwardedFor[len(xForwardedFor)-2]) // more than 2
+		return xForwardedFor[len(xForwardedFor)-2] // more than 2
 	}
 
-	return portSuffixRegex.ReplaceAllLiteralString(peerAddr, "")
 }
