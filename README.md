@@ -3,19 +3,22 @@
 [![reference](https://img.shields.io/badge/godoc-reference-5272B4.svg?style=flat-square)](https://pkg.go.dev/github.com/streamingfast/dauth)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This library is the authentication interface used as part of **[dfuse](https://github.com/streamingfast/streamingfast)**.
+## Standard headers
 
+These headers can be passed to the middleware and exposed to the app as **TrustedHeaders**
 
-## Usage
+* `x-sf-user-id`
+* `x-sf-api-key-id`
+* `x-real-ip`
 
-See example usage in [dgraphql](https://github.com/streamingfast/dgraphql).
+More headers can be passed.
+
+## Plugins
 
 The following plugins are provided by this package:
 
-* `null://`
-* `secret://this-is-the-secret-as-the-hostname`
-* `cloud-gcp://projects/your-gcp-project-id/locations/global/keyRings/your-keyring/cryptoKeys/your-key-like-default/cryptoKeyVersions/1?ip_whitelist={127,192.168.1[0-9]}.*`
-
+* `trust://` This will trust the incoming HTTP headers as-is
+* `grpc://hostname:port` This will send the incoming HTTP headers to a grpc service which returns trusted headers (see [proto definitions](/proto/sf/authentication/v1/authentication.proto)
 
 ## Contributing
 
@@ -27,7 +30,6 @@ Report any protocol-specific issues in their
 **Please first refer to the general
 [dfuse contribution guide](https://github.com/streamingfast/streamingfast/blob/master/CONTRIBUTING.md)**,
 if you wish to contribute to this code base.
-
 
 ## License
 
