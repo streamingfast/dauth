@@ -9,7 +9,6 @@ import (
 	"github.com/streamingfast/dauth"
 	pbauth "github.com/streamingfast/dauth/pb/sf/authentication/v1"
 	"github.com/streamingfast/dgrpc"
-	"google.golang.org/grpc/metadata"
 )
 
 func Register() {
@@ -68,9 +67,9 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 		return nil, fmt.Errorf("auth grpc service failed: %w", err)
 	}
 
-	out := metadata.MD{}
+	out := make(dauth.TrustedHeaders)
 	for _, authenticatedHeader := range resp.AuthenticatedHeaders {
 		out.Set(authenticatedHeader.Key, authenticatedHeader.Value)
 	}
-	return metadata.NewIncomingContext(ctx, out), nil
+	return out.ToContext(ctx), nil
 }
