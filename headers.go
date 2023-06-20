@@ -19,6 +19,10 @@ type trustedHeadersKeyType int
 
 const trustedHeadersKey trustedHeadersKeyType = iota
 
+func WithTrustedHeaders(ctx context.Context, h TrustedHeaders) context.Context {
+	return context.WithValue(ctx, trustedHeadersKey, h)
+}
+
 func (h TrustedHeaders) ToContext(ctx context.Context) context.Context {
 	return context.WithValue(ctx, trustedHeadersKey, h)
 }
@@ -45,10 +49,6 @@ func (h TrustedHeaders) RealIP() string {
 
 func (h TrustedHeaders) Get(key string) string {
 	return h[strings.ToLower(key)]
-}
-
-func (h TrustedHeaders) Set(key, value string) {
-	h[strings.ToLower(key)] = value
 }
 
 func (h TrustedHeaders) ToOutgoingGRPCContext(ctx context.Context) context.Context {

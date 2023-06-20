@@ -69,7 +69,7 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 
 	out := make(dauth.TrustedHeaders)
 	for _, authenticatedHeader := range resp.AuthenticatedHeaders {
-		out.Set(authenticatedHeader.Key, authenticatedHeader.Value)
+		out[authenticatedHeader.Key] = strings.ToLower(authenticatedHeader.Value)
 	}
 	return out.ToContext(ctx), nil
 }

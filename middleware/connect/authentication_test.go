@@ -18,10 +18,10 @@ func (t testAuthenticators) Close() error { return nil }
 func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
 	out := make(dauth.TrustedHeaders)
 	for key, values := range headers {
-		out.Set(key, values[0])
+		out[key] = values[0]
 	}
-	out.Set("X-SF-SUBSTREAMS-LL", "987")
-	out.Set("X-Sf-User-Id", "a1b2c3")
+	out["x-sf-substreams-ll"] = "987"
+	out["x-sf-user-id"] = "a1b2c3"
 	return out.ToContext(ctx), nil
 }
 
