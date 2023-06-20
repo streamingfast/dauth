@@ -8,7 +8,6 @@ import (
 	"github.com/streamingfast/dauth/middleware"
 	"github.com/streamingfast/derr"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 )
 
 type AuthErrorHandler = func(w http.ResponseWriter, ctx context.Context, err error)
@@ -50,25 +49,10 @@ func (m *AuthMiddleware) Handler(next http.Handler) http.Handler {
 func validateAuth(r *http.Request, authenticator dauth.Authenticator) (*http.Request, error) {
 	ctx := r.Context()
 
-	ctx, authenticatedHeaders, err := authenticator.Authenticate(ctx, r.URL.String(), r.Header, middleware.RealIP(r.RemoteAddr, r.Header))
+	ctx, err := authenticator.Authenticate(ctx, r.URL.String(), r.Header, middleware.RealIP(r.RemoteAddr, r.Header))
 	if err != nil {
 		return nil, err
 	}
 
-	ctx = metadata.NewIncomingContext(ctx, authenticatedHeaders)
-	newRequest := r.Clone(ctx)
-
-	// We cannot simply cast the metadata.MD into an http.Header since they
-	// do not format the keys the same (lowercase vs Capitalized)
-	httpHeaders := http.Header{}
-
-	for key, values := range authenticatedHeaders {
-		for _, v := range values {
-			httpHeaders.Set(key, v)
-		}
-
-	}
-
-	newRequest.Header = httpHeaders
-	return newRequest, nil
+	return r.Clone(ctx), nil
 }

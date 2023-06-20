@@ -8,6 +8,7 @@ require (
 	github.com/streamingfast/dgrpc v0.0.0-20230616153353-6bbf5534a79a
 	github.com/streamingfast/logging v0.0.0-20220304214715-bc750a74b424
 	github.com/stretchr/testify v1.8.2
+	github.com/test-go/testify v1.1.4
 	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.30.0
 )

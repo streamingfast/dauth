@@ -31,10 +31,9 @@ func validateAuth(ctx context.Context, path string, authenticator dauth.Authenti
 		md = EmptyMetadata
 	}
 
-	ctx, authenticatedheaders, err := authenticator.Authenticate(ctx, path, url.Values(md), middleware.RealIP(peerFromContext(ctx), md))
+	ctx, err := authenticator.Authenticate(ctx, path, url.Values(md), middleware.RealIP(peerFromContext(ctx), md))
 	if err != nil {
 		return ctx, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
 	}
-
-	return metadata.NewIncomingContext(ctx, authenticatedheaders), nil
+	return ctx, err
 }

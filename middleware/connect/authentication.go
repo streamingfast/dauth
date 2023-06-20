@@ -20,12 +20,12 @@ func validateAuth(
 	path string,
 	headers http.Header,
 	peerAddr string,
-	authenticator dauth.Authenticator) (context.Context, metadata.MD, error) {
+	authenticator dauth.Authenticator) (context.Context, error) {
 
-	childCtx, newHeaders, err := authenticator.Authenticate(ctx, path, headers, middleware.RealIP(peerAddr, headers))
+	childCtx, err := authenticator.Authenticate(ctx, path, headers, middleware.RealIP(peerAddr, headers))
 	if err != nil {
-		return nil, nil, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
 	}
 
-	return childCtx, newHeaders, nil
+	return childCtx, nil
 }

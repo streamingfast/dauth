@@ -2,6 +2,8 @@ package dauth
 
 import (
 	"context"
+	"strings"
+
 	"google.golang.org/grpc/metadata"
 )
 
@@ -11,21 +13,44 @@ const (
 	SFHeaderIP       string = "x-real-ip"
 )
 
-func FromContext(ctx context.Context) (userID string, apiKeyId string, ip string) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return
-	}
+type TrustedHeaders map[string]string
 
-	userID = getHeader(SFHeaderUserID, md)
-	apiKeyId = getHeader(SFHeaderApiKeyID, md)
-	ip = getHeader(SFHeaderIP, md)
-	return
+type trustedHeadersKeyType int
+
+const trustedHeadersKey trustedHeadersKeyType = iota
+
+func (h TrustedHeaders) ToContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, trustedHeadersKey, h)
 }
 
-func getHeader(key string, md metadata.MD) string {
-	if len(md.Get(key)) > 0 {
-		return md.Get(key)[0]
+func FromContext(ctx context.Context) TrustedHeaders {
+	val := ctx.Value(trustedHeadersKey)
+	if val == nil {
+		return nil
 	}
-	return ""
+	return val.(TrustedHeaders)
+}
+
+func (h TrustedHeaders) UserID() string {
+	return h[SFHeaderUserID]
+}
+
+func (h TrustedHeaders) APIKeyID() string {
+	return h[SFHeaderApiKeyID]
+}
+
+func (h TrustedHeaders) RealIP() string {
+	return h[SFHeaderIP]
+}
+
+func (h TrustedHeaders) Get(key string) string {
+	return h[strings.ToLower(key)]
+}
+
+func (h TrustedHeaders) Set(key, value string) {
+	h[strings.ToLower(key)] = value
+}
+
+func (h TrustedHeaders) ToOutgoingGRPCContext(ctx context.Context) context.Context {
+	return metadata.NewOutgoingContext(ctx, metadata.New(h))
 }

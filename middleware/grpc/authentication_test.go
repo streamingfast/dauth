@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/streamingfast/dauth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
@@ -12,16 +13,14 @@ import (
 type testAuthenticators struct {
 }
 
-func (t testAuthenticators) Close() error { return nil }
-
-func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, metadata.MD, error) {
-	out := metadata.MD{}
+func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
+	out := make(dauth.TrustedHeaders)
 	for key, values := range headers {
-		out.Set(key, values...)
+		out.Set(key, values[0])
 	}
 	out.Set("X-SF-SUBSTREAMS-LL", "987")
 	out.Set("X-Sf-User-Id", "a1b2c3")
-	return ctx, out, nil
+	return out.ToContext(ctx), nil
 }
 
 func Test_validAuth(t *testing.T) {
@@ -36,10 +35,8 @@ func Test_validAuth(t *testing.T) {
 	ctx, err := validateAuth(ctx, "/package.service/method", authenticator)
 	require.NoError(t, err)
 
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		md = EmptyMetadata
-	}
-	assert.Equal(t, []string{"a1b2c3"}, md.Get("X-SF-USER-ID"))
-	assert.Equal(t, []string{"987"}, md.Get("x-sf-substreams-ll"))
+	trusted := dauth.FromContext(ctx)
+
+	assert.Equal(t, "987", trusted.Get("x-sf-substreams-ll"))
+	assert.Equal(t, "a1b2c3", trusted.Get("X-Sf-User-ID"))
 }

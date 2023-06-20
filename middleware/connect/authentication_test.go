@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"testing"
 
-	"google.golang.org/grpc/metadata"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/streamingfast/dauth"
 	"github.com/stretchr/testify/require"
+	"github.com/test-go/testify/assert"
 )
 
 type testAuthenticators struct {
@@ -16,14 +15,14 @@ type testAuthenticators struct {
 
 func (t testAuthenticators) Close() error { return nil }
 
-func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, metadata.MD, error) {
-	out := metadata.MD{}
+func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
+	out := make(dauth.TrustedHeaders)
 	for key, values := range headers {
-		out.Set(key, values...)
+		out.Set(key, values[0])
 	}
 	out.Set("X-SF-SUBSTREAMS-LL", "987")
 	out.Set("X-Sf-User-Id", "a1b2c3")
-	return metadata.NewIncomingContext(ctx, out), out, nil
+	return out.ToContext(ctx), nil
 }
 
 func Test_validAuth(t *testing.T) {
@@ -32,18 +31,13 @@ func Test_validAuth(t *testing.T) {
 		"X-SF-SUBSTREAMS-Ll": []string{"123"},
 	}
 
-	//auth,:= metadata.NewIncomingContext(context.Background(), headers)
 	authenticator := &testAuthenticators{}
 
-	ctx, newHeaders, err := validateAuth(context.Background(), "/package.service/method", headers, "127.0.0.2", authenticator)
+	ctx, err := validateAuth(context.Background(), "/package.service/method", headers, "127.0.0.2", authenticator)
 	require.NoError(t, err)
+	trusted := dauth.FromContext(ctx)
 
-	assert.Equal(t, []string{"a1b2c3"}, newHeaders.Get("X-SF-USER-ID"))
-	assert.Equal(t, []string{"987"}, newHeaders.Get("x-sf-substreams-ll"))
+	assert.Equal(t, "987", trusted.Get("x-sf-substreams-ll"))
+	assert.Equal(t, "a1b2c3", trusted.Get("X-Sf-User-ID"))
 
-	md, found := metadata.FromIncomingContext(ctx)
-	assert.True(t, found)
-
-	assert.Equal(t, []string{"a1b2c3"}, md.Get("X-SF-USER-ID"))
-	assert.Equal(t, []string{"987"}, md.Get("x-sf-substreams-ll"))
 }

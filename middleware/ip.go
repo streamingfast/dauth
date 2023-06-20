@@ -7,8 +7,14 @@ import (
 
 var portSuffixRegex = regexp.MustCompile(`:[0-9]{2,5}$`)
 
-// RealIP tries to get the source IP from X-Forwarded-For headers or from the peerAddress
+// RealIP tries to get the source IP from X-Real-IP, X-Forwarded-For headers or from the peerAddress
 func RealIP(peerAddr string, headers map[string][]string) string {
+	for k, v := range headers {
+		if strings.ToLower(k) == "x-real-ip" && len(v) == 1 {
+			return v[0]
+		}
+	}
+
 	var xForwardedFor []string
 	for k := range headers {
 		if strings.ToLower(k) == "x-forwarded-for" {

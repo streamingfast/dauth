@@ -3,12 +3,11 @@ package dauth
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/metadata"
 	"net/url"
 )
 
 type Authenticator interface {
-	Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, metadata.MD, error)
+	Authenticate(ctx context.Context, path string, headers map[string][]string, peerAddress string) (context.Context, error)
 }
 
 var registry = make(map[string]FactoryFunc)
