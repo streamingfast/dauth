@@ -16,7 +16,7 @@ func TestHeadersContext(t *testing.T) {
 	th[SFHeaderUserID] = "my-user-id"
 	th["random-key"] = "102"
 
-	ctx = th.ToContext(ctx)
+	ctx = WithTrustedHeaders(ctx, th)
 
 	got := FromContext(ctx)
 

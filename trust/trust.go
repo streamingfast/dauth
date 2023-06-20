@@ -22,5 +22,5 @@ func (t *trustPlugin) Authenticate(ctx context.Context, path string, headers map
 	for key, values := range headers {
 		out[key] = strings.ToLower(values[0])
 	}
-	return out.ToContext(ctx), nil
+	return dauth.WithTrustedHeaders(ctx, out), nil
 }

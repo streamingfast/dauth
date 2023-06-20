@@ -23,10 +23,6 @@ func WithTrustedHeaders(ctx context.Context, h TrustedHeaders) context.Context {
 	return context.WithValue(ctx, trustedHeadersKey, h)
 }
 
-func (h TrustedHeaders) ToContext(ctx context.Context) context.Context {
-	return context.WithValue(ctx, trustedHeadersKey, h)
-}
-
 func FromContext(ctx context.Context) TrustedHeaders {
 	val := ctx.Value(trustedHeadersKey)
 	if val == nil {

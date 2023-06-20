@@ -22,7 +22,7 @@ func (t testAuthenticators) Authenticate(ctx context.Context, path string, heade
 	}
 	out["x-sf-substreams-ll"] = "987"
 	out["x-sf-user-id"] = "a1b2c3"
-	return out.ToContext(ctx), nil
+	return dauth.WithTrustedHeaders(ctx, out), nil
 }
 
 func Test_validAuth(t *testing.T) {

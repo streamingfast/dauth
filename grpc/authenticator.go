@@ -71,5 +71,5 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 	for _, authenticatedHeader := range resp.AuthenticatedHeaders {
 		out[authenticatedHeader.Key] = strings.ToLower(authenticatedHeader.Value)
 	}
-	return out.ToContext(ctx), nil
+	return dauth.WithTrustedHeaders(ctx, out), nil
 }
