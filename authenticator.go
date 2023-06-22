@@ -7,7 +7,7 @@ import (
 )
 
 type Authenticator interface {
-	Authenticate(ctx context.Context, path string, headers map[string][]string, peerAddress string) (context.Context, error)
+	Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error)
 }
 
 var registry = make(map[string]FactoryFunc)
