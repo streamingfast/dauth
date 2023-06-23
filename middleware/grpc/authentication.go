@@ -8,9 +8,7 @@ import (
 	"github.com/streamingfast/dauth"
 	"github.com/streamingfast/dauth/middleware"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 var portSuffixRegex = regexp.MustCompile(`:[0-9]{2,5}$`)
@@ -33,7 +31,7 @@ func validateAuth(ctx context.Context, path string, authenticator dauth.Authenti
 
 	ctx, err := authenticator.Authenticate(ctx, path, url.Values(md), middleware.RealIP(peerFromContext(ctx), md))
 	if err != nil {
-		return ctx, status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())
+		return ctx, err
 	}
 	return ctx, err
 }

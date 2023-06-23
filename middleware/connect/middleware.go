@@ -2,9 +2,12 @@ package server
 
 import (
 	"context"
+	"errors"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/streamingfast/dauth"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func NewAuthInterceptor(check dauth.Authenticator) *AuthInterceptor {
@@ -27,7 +30,7 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 
 		childCtx, err := validateAuth(ctx, path, headers, peerAddr, i.check)
 		if err != nil {
-			return nil, err
+			return nil, obfuscateErrorMessage(err)
 		}
 
 		return next(childCtx, req)
@@ -43,7 +46,7 @@ func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 
 		childCtx, err := validateAuth(ctx, path, headers, peerAddr, i.check)
 		if err != nil {
-			return err
+			return obfuscateErrorMessage(err)
 		}
 
 		return next(childCtx, conn)
@@ -55,4 +58,14 @@ func (i *AuthInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) 
 	return next
 }
 
-// req.Header().Get("Some-Header")
+func obfuscateErrorMessage(err error) error {
+	if st, ok := status.FromError(err); ok {
+		msg := st.Message()
+		switch st.Code() {
+		case codes.Internal, codes.Unavailable, codes.Unknown:
+			msg = "error with authentication service, please try again later"
+		}
+		return connect.NewError(connect.Code(st.Code()), errors.New(msg))
+	}
+	return err
+}

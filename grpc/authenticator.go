@@ -64,7 +64,7 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 
 	resp, err := a.client.Authenticate(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("auth grpc service failed: %w", err)
+		return nil, err
 	}
 
 	out := make(dauth.TrustedHeaders)
