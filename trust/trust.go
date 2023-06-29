@@ -20,7 +20,7 @@ type trustPlugin struct {
 func (t *trustPlugin) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
 	out := make(dauth.TrustedHeaders)
 	for key, values := range headers {
-		out[key] = strings.ToLower(values[0])
+		out[strings.ToLower(key)] = values[0]
 	}
 	return dauth.WithTrustedHeaders(ctx, out), nil
 }
