@@ -15,6 +15,10 @@ type testAuthenticators struct {
 
 func (t testAuthenticators) Close() error { return nil }
 
+func (t testAuthenticators) Ready(_ context.Context) bool {
+	return true
+}
+
 func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
 	out := make(dauth.TrustedHeaders)
 	for key, values := range headers {

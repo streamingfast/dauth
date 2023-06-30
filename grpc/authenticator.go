@@ -9,6 +9,7 @@ import (
 	"github.com/streamingfast/dauth"
 	pbauth "github.com/streamingfast/dauth/pb/sf/authentication/v1"
 	"github.com/streamingfast/dgrpc"
+	pbhealth "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func Register() {
@@ -31,7 +32,8 @@ func parseURL(configURL string) (serverAddr string, err error) {
 }
 
 type authenticatorPlugin struct {
-	client pbauth.AuthenticationClient
+	client       pbauth.AuthenticationClient
+	healthClient pbhealth.HealthClient
 }
 
 func newAuthenticator(serverAddr string) (*authenticatorPlugin, error) {
@@ -41,9 +43,18 @@ func newAuthenticator(serverAddr string) (*authenticatorPlugin, error) {
 	}
 
 	ap := &authenticatorPlugin{
-		client: pbauth.NewAuthenticationClient(conn),
+		client:       pbauth.NewAuthenticationClient(conn),
+		healthClient: pbhealth.NewHealthClient(conn),
 	}
 	return ap, nil
+}
+
+func (a *authenticatorPlugin) Ready(ctx context.Context) bool {
+	r, err := a.healthClient.Check(ctx, &pbhealth.HealthCheckRequest{})
+	if err != nil {
+		return false
+	}
+	return r.Status == pbhealth.HealthCheckResponse_SERVING
 }
 
 func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
