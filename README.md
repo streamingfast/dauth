@@ -25,11 +25,11 @@ You can think of `TrustedHeaders` as HTTP headers. StreamingFast services will e
 ### Plugins
 
 An auth plugin will take as input the incoming HTTP Headers, as well as the ip address, and will return trusted headers. How the plugin determine 
-which header to keep or trust is up to the implementation. The plugin is configured via a specific DSN. We currently support 2 plugins
+which header to keep or trust is up to the implementation. The plugin is configured via a specific DSN. We currently support 3 plugins
 
 - Trusted Plugin: `trust://`
 - GRPC Plugin: `grpc://hostname:port`
-
+- Null Plugin: `null://`
 
 *Trusted Plugin*
 
@@ -43,6 +43,10 @@ The gRPC plugin will perform a grpc request to the defined endpoint. The respons
 the gRPC service is a sidecar. This sidecar could, for example, read a JWT from the incoming `Authorization` header and return the appropriate values for the *TrustedHeaders* `x-sf-user-id` and `x-sf-api-key-id`.
 
 The motivation behind the GRPC plugin is to give the operator flexibility in implementing their authentication layer. 
+
+*Null Plugin*
+
+The null plugin does not keep or trust any header from the requests. It returns an empty string to any Get() function.
 
 ![GRPC Plugin](./docs/grpc_plugin.png)
 

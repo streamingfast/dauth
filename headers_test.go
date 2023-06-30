@@ -37,3 +37,13 @@ func TestHeadersMetadataContext(t *testing.T) {
 
 	assert.Equal(t, []string{"my-user-id"}, md.Get(SFHeaderUserID))
 }
+
+func TestNilDoesntPanic(t *testing.T) {
+	ctx := context.Background()
+
+	h := FromContext(ctx)
+	assert.Nil(t, h)
+	assert.Equal(t, "", h.RealIP())
+	assert.Equal(t, "", h.UserID())
+	assert.Equal(t, "", h.Get("something"))
+}
