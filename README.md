@@ -49,12 +49,11 @@ The motivation behind the gRPC plugin is to give the operator flexibility in imp
 
 Please note that when using this plugin in a Substreams tier1/tier2 infrastructure, then only the tier1 nodes should authenticate requests using gRPC, while all tier2 nodes should use the Trusted Plugin (`trust://`) instead. Subrequests to tier2 nodes have already been authenticated on tier1 nodes so re-authenticating on tier2 nodes is not neccessary and might result in undesired effects such as JWT expiration in running Substreams.
 
+![GRPC Plugin](./docs/grpc_plugin.png)
+
 *Null Plugin*
 
 The null plugin does not keep or trust any header from the requests. It returns an empty string to any Get() function.
-
-![GRPC Plugin](./docs/grpc_plugin.png)
-
 
 ## Contributing
 
