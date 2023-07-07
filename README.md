@@ -31,7 +31,7 @@ An auth plugin will take as input the incoming HTTP Headers, as well as the ip a
 which header to keep or trust is up to the implementation. The plugin is configured via a specific DSN. We currently support 3 plugins
 
 - Trusted Plugin: `trust://`
-- gRPC Plugin: `grpc://hostname:port`
+- GRPC Plugin: `grpc://hostname:port`
 - Null Plugin: `null://`
 
 *Trusted Plugin*
