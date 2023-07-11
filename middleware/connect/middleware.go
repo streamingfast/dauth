@@ -11,18 +11,22 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func NewAuthInterceptor(check dauth.Authenticator) *AuthInterceptor {
+var _ connect.Interceptor = (*AuthInterceptor)(nil)
+
+func NewAuthInterceptor(check dauth.Authenticator, logger *zap.Logger) *AuthInterceptor {
 	return &AuthInterceptor{
-		check: check,
+		check:  check,
+		logger: logger,
 	}
 }
 
 type AuthInterceptor struct {
-	check dauth.Authenticator
+	check  dauth.Authenticator
+	logger *zap.Logger
 }
 
 // WrapUnary implements [Interceptor] by applying the interceptor function.
-func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc, logger *zap.Logger) connect.UnaryFunc {
+func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 
 		peerAddr := req.Peer().Addr
@@ -31,14 +35,14 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc, logger *zap.Logger) 
 
 		childCtx, err := validateAuth(ctx, path, headers, peerAddr, i.check)
 		if err != nil {
-			return nil, obfuscateErrorMessage(err, logger)
+			return nil, obfuscateErrorMessage(err, i.logger)
 		}
 
 		return next(childCtx, req)
 	}
 }
 
-func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc, logger *zap.Logger) connect.StreamingHandlerFunc {
+func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
 	return func(ctx context.Context, conn connect.StreamingHandlerConn) error {
 
 		peerAddr := conn.Peer().Addr
@@ -47,7 +51,7 @@ func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 
 		childCtx, err := validateAuth(ctx, path, headers, peerAddr, i.check)
 		if err != nil {
-			return obfuscateErrorMessage(err, logger)
+			return obfuscateErrorMessage(err, i.logger)
 		}
 
 		return next(childCtx, conn)
