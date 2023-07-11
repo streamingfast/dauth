@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/streamingfast/dauth"
 	pbauth "github.com/streamingfast/dauth/pb/sf/authentication/v1"
@@ -66,6 +67,13 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 
 	for key, values := range headers {
 		for _, value := range values {
+			if !utf8.ValidString(key) {
+				key = strings.ToValidUTF8(key, "?")
+			}
+			if !utf8.ValidString(value) {
+				value = strings.ToValidUTF8(value, "?")
+			}
+
 			req.Headers = append(req.Headers, &pbauth.Header{
 				Key:   strings.ToLower(key),
 				Value: value,
