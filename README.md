@@ -23,7 +23,8 @@ You can think of `TrustedHeaders` as HTTP headers. StreamingFast services will e
 
 To control the execution of Substreams on a per-user basis the following `TrustedHeaders` can be set:
 
-- `x-sf-substreams-parallel-jobs`
+- `X-Sf-Substreams-Parallel-Jobs`
+- `X-Sf-Substreams-Cache-Tag`
 
 ### Plugins
 
