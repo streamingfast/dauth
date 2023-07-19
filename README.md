@@ -38,6 +38,7 @@ which header to keep or trust is up to the implementation. The plugin is configu
 *Trusted Plugin*
 
 The trusted plugin simply acts as a pass-through. It will trust all incoming headers. This should be used if the proxy layer does the authorization and sets the trusted headers.
+You can change the default "trust-everything" behavior by specifying an exclusive list of `allowed` headers, ex: `trust://?allowed=x-sf-user-id,x-sf-api-key-id,x-real-ip,x-sf-substreams-cache-tag`
 
 ![Trusted Plugin](./docs/trusted_plugin.png)
 
