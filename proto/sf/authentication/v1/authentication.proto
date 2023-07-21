@@ -12,6 +12,8 @@ message AuthRequest {
   string url = 1;
   repeated Header headers = 2;
   string ip = 3;
+  // The number of times we called Authenticate for a given long running connection (i.e. continuous auth)
+  uint64 auth_count = 4;
 }
 
 message Header {

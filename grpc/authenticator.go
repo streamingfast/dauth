@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/streamingfast/dauth"
@@ -15,37 +15,32 @@ import (
 
 func Register() {
 	dauth.Register("grpc", func(configURL string) (dauth.Authenticator, error) {
-		serverAddr, err := parseURL(configURL)
+		config, err := newConfig(configURL)
 		if err != nil {
-			return nil, fmt.Errorf("grpc factory: %w", err)
+			return nil, fmt.Errorf("failed to setup config: %w", err)
 		}
-
-		return newAuthenticator(serverAddr)
+		return newAuthenticator(config)
 	})
 }
 
-func parseURL(configURL string) (serverAddr string, err error) {
-	urlObject, err := url.Parse(configURL)
-	if err != nil {
-		return
-	}
-	return urlObject.Host + urlObject.Path, nil
-}
-
 type authenticatorPlugin struct {
-	client       pbauth.AuthenticationClient
-	healthClient pbhealth.HealthClient
+	client                pbauth.AuthenticationClient
+	healthClient          pbhealth.HealthClient
+	continuousInterval    time.Duration
+	enabledContinuousAuth bool
 }
 
-func newAuthenticator(serverAddr string) (*authenticatorPlugin, error) {
-	conn, err := dgrpc.NewInternalNoWaitClient(serverAddr)
+func newAuthenticator(c *config) (*authenticatorPlugin, error) {
+	conn, err := dgrpc.NewInternalNoWaitClient(c.endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("new auth grpc client: %w", err)
 	}
 
 	ap := &authenticatorPlugin{
-		client:       pbauth.NewAuthenticationClient(conn),
-		healthClient: pbhealth.NewHealthClient(conn),
+		client:                pbauth.NewAuthenticationClient(conn),
+		enabledContinuousAuth: c.enabledContinuousAuth,
+		continuousInterval:    10 * time.Second,
+		healthClient:          pbhealth.NewHealthClient(conn),
 	}
 	return ap, nil
 }
@@ -60,9 +55,10 @@ func (a *authenticatorPlugin) Ready(ctx context.Context) bool {
 
 func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
 	req := &pbauth.AuthRequest{
-		Url:     path,
-		Ip:      ipAddress,
-		Headers: nil,
+		Url:       path,
+		Ip:        ipAddress,
+		AuthCount: 1,
+		Headers:   nil,
 	}
 
 	for key, values := range headers {
@@ -90,5 +86,31 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 	for _, authenticatedHeader := range resp.AuthenticatedHeaders {
 		out[strings.ToLower(authenticatedHeader.Key)] = authenticatedHeader.Value
 	}
+
+	ctx, cancel := context.WithCancelCause(ctx)
+
+	go a.continuousAuth(ctx, req, cancel)
+
 	return dauth.WithTrustedHeaders(ctx, out), nil
+}
+
+func (a *authenticatorPlugin) continuousAuth(ctx context.Context, req *pbauth.AuthRequest, cancel context.CancelCauseFunc) {
+	if !a.enabledContinuousAuth {
+		return
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(a.continuousInterval):
+		}
+
+		req.AuthCount++
+
+		if _, err := a.client.Authenticate(context.Background(), req); err != nil {
+			cancel(err)
+			return
+		}
+	}
 }
