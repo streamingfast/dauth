@@ -2,6 +2,7 @@ package trust
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"net/url"
 	"strings"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func Register() {
-	dauth.Register("trust", func(configURL string) (dauth.Authenticator, error) {
+	dauth.Register("trust", func(configURL string, logger *zap.Logger) (dauth.Authenticator, error) {
 		urlObject, err := url.Parse(configURL)
 		if err != nil {
 			return nil, err
@@ -22,7 +23,7 @@ func Register() {
 				out.allowed[strings.ToLower(al)] = true
 			}
 		}
-
+		logger.Info("setting up trust authenticator")
 		return out, nil
 	})
 

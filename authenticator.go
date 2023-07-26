@@ -3,6 +3,7 @@ package dauth
 import (
 	"context"
 	"fmt"
+	"go.uber.org/zap"
 	"net/url"
 )
 
@@ -13,7 +14,7 @@ type Authenticator interface {
 
 var registry = make(map[string]FactoryFunc)
 
-func New(config string) (Authenticator, error) {
+func New(config string, logger *zap.Logger) (Authenticator, error) {
 	u, err := url.Parse(config)
 	if err != nil {
 		return nil, err
@@ -23,10 +24,10 @@ func New(config string) (Authenticator, error) {
 	if factory == nil {
 		panic(fmt.Sprintf("no Authenticator plugin named \"%s\" is currently registered", u.Scheme))
 	}
-	return factory(config)
+	return factory(config, logger)
 }
 
-type FactoryFunc func(config string) (Authenticator, error)
+type FactoryFunc func(config string, logger *zap.Logger) (Authenticator, error)
 
 func Register(name string, factory FactoryFunc) {
 	registry[name] = factory

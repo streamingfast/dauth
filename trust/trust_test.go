@@ -2,6 +2,7 @@ package trust
 
 import (
 	"context"
+	"go.uber.org/zap"
 	"testing"
 
 	"github.com/streamingfast/dauth"
@@ -11,7 +12,7 @@ import (
 
 func TestParse(t *testing.T) {
 	Register()
-	a, err := dauth.New("trust://?allowed=x-sf-something,x-sf-SoMeThingElse")
+	a, err := dauth.New("trust://?allowed=x-sf-something,x-sf-SoMeThingElse", zap.NewNop())
 	require.NoError(t, err)
 
 	p := a.(*trustPlugin)
