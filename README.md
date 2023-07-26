@@ -49,6 +49,8 @@ the gRPC service is a sidecar. This sidecar could, for example, read a JWT from 
 
 The motivation behind the gRPC plugin is to give the operator flexibility in implementing their authentication layer.
 
+The gROC plugin supports continuous auth.To enable continuous auth you can use `grpc://localhost:9000?continuous=true`. When continuous auth is enabled, the GRPC plugin will continuously poll the GRPC auth service, and will cancel the context with an error when it fails. 
+
 Please note that when using this plugin in a Substreams tier1/tier2 infrastructure, then only the tier1 nodes should authenticate requests using gRPC, while all tier2 nodes should use the Trusted Plugin (`trust://`) instead. Sub-requests to tier2 nodes have already been authenticated on tier1 nodes, so re-authenticating on tier2 nodes is not necessary and might result in undesired effects such as JWT expiration in running Substreams.
 
 ![GRPC Plugin](./docs/grpc_plugin.png)
