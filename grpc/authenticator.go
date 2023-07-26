@@ -20,7 +20,11 @@ func Register() {
 		if err != nil {
 			return nil, fmt.Errorf("failed to setup config: %w", err)
 		}
-		logger.Info("setting up grpc authenticator", zap.Reflect("config", c))
+		logger.Info("setting up grpc authenticator",
+			zap.String("config_url", configURL),
+			zap.String("endpoint", c.endpoint),
+			zap.Bool("continuous_auth", c.enabledContinuousAuth),
+		)
 		return newAuthenticator(c, logger)
 	})
 }
