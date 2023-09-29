@@ -2,16 +2,15 @@ package trust
 
 import (
 	"context"
-	"go.uber.org/zap"
 
 	"github.com/streamingfast/dauth"
+	"go.uber.org/zap"
 )
 
 func Register() {
 	dauth.Register("null", func(configURL string, _ *zap.Logger) (dauth.Authenticator, error) {
 		return &nullPlugin{}, nil
 	})
-
 }
 
 type nullPlugin struct {
