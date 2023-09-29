@@ -34,6 +34,7 @@ which header to keep or trust is up to the implementation. The plugin is configu
 - Trusted Plugin: `trust://`
 - GRPC Plugin: `grpc://hostname:port`
 - Null Plugin: `null://`
+- Secret Plugin: `secret://this-is-the-secret-and-fits-in-the-host-field?[user_id=<value>]&[api_key_id=<value>]`
 
 *Trusted Plugin*
 
@@ -49,7 +50,7 @@ the gRPC service is a sidecar. This sidecar could, for example, read a JWT from 
 
 The motivation behind the gRPC plugin is to give the operator flexibility in implementing their authentication layer.
 
-The gROC plugin supports continuous auth.To enable continuous auth you can use `grpc://localhost:9000?continuous=true`. When continuous auth is enabled, the GRPC plugin will continuously poll the GRPC auth service, and will cancel the context with an error when it fails. 
+The gROC plugin supports continuous auth.To enable continuous auth you can use `grpc://localhost:9000?continuous=true`. When continuous auth is enabled, the GRPC plugin will continuously poll the GRPC auth service, and will cancel the context with an error when it fails.
 
 Please note that when using this plugin in a Substreams tier1/tier2 infrastructure, then only the tier1 nodes should authenticate requests using gRPC, while all tier2 nodes should use the Trusted Plugin (`trust://`) instead. Sub-requests to tier2 nodes have already been authenticated on tier1 nodes, so re-authenticating on tier2 nodes is not necessary and might result in undesired effects such as JWT expiration in running Substreams.
 
@@ -58,6 +59,18 @@ Please note that when using this plugin in a Substreams tier1/tier2 infrastructu
 *Null Plugin*
 
 The null plugin does not keep or trust any header from the requests. It returns an empty string to any Get() function.
+
+*Secret Plugin*
+
+The secret plugin ensures that the request contains an `Authorization` header of the form `Authorization: Bearer <secret>` where `<secret>` must fit the configured secret value accepted.
+
+The plugin upon valid request populate the trusted headers:
+
+- `x-sf-user-id`
+- `x-sf-api-key-id`
+- `x-real-ip`
+
+Where `x-real-ip` is the IP of the request and `x-sf-user-id` and `x-sf-api-key-id` to their respective config value `user_id` and `api_key_id` of the `secret://` URL.
 
 ## Contributing
 

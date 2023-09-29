@@ -3,10 +3,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2020-07-25
+## Unreleased
 
 ### Added
-- Added continuous authentication support, enable by setting `grpc://localhost:9018?continuous=true`
+
+* Added back `secret` plugin support with the form `secret://this-is-the-secret-and-fits-in-the-host-field?[user_id=<value>]&[api_key_id=<value>]`.
+
+* Added continuous authentication support, enable by setting `grpc://localhost:9018?continuous=true`
+
 
 ## 2020-03-21
 
