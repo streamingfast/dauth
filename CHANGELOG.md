@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Added continuous authentication support, enable by setting `grpc://localhost:9018?continuous=true`
 
+* Added `x-sf-meta` header to pass arbitrary metadata as trusted headers.
 
 ## 2020-03-21
 

@@ -45,5 +45,6 @@ func TestNilDoesntPanic(t *testing.T) {
 	assert.Nil(t, h)
 	assert.Equal(t, "", h.RealIP())
 	assert.Equal(t, "", h.UserID())
+	assert.Equal(t, "", h.Meta())
 	assert.Equal(t, "", h.Get("something"))
 }

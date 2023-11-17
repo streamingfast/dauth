@@ -10,6 +10,7 @@ import (
 const (
 	SFHeaderUserID   string = "x-sf-user-id"
 	SFHeaderApiKeyID string = "x-sf-api-key-id"
+	SFHeaderMeta     string = "x-sf-meta"
 	SFHeaderIP       string = "x-real-ip"
 )
 
@@ -37,6 +38,10 @@ func (h TrustedHeaders) UserID() string {
 
 func (h TrustedHeaders) APIKeyID() string {
 	return h[SFHeaderApiKeyID]
+}
+
+func (h TrustedHeaders) Meta() string {
+	return h[SFHeaderMeta]
 }
 
 func (h TrustedHeaders) RealIP() string {
