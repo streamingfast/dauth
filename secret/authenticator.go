@@ -47,6 +47,7 @@ type authenticator struct {
 	secret   string
 	userID   string
 	apiKeyID string
+	meta     string
 }
 
 func newAuthenticatorFromURL(urlRaw string) (*authenticator, error) {
@@ -61,6 +62,7 @@ func newAuthenticatorFromURL(urlRaw string) (*authenticator, error) {
 		secret:   urlObject.Host,
 		userID:   params.Get("user_id"),
 		apiKeyID: params.Get("api_key_id"),
+		meta:     params.Get("meta"),
 	}, nil
 }
 
@@ -100,6 +102,7 @@ func (a *authenticator) Authenticate(ctx context.Context, path string, headers m
 	out[dauth.SFHeaderIP] = ipAddress
 	out[dauth.SFHeaderUserID] = a.userID
 	out[dauth.SFHeaderApiKeyID] = a.apiKeyID
+	out[dauth.SFHeaderMeta] = a.meta
 
 	return dauth.WithTrustedHeaders(ctx, out), nil
 }
