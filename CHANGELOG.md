@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+* move from deprecated `github.com/bufbuild/connect-go` to `connectrpc.com/connect`
+
 ### Added
 
 * added `x-trace-id` header in grpc request to dauth
