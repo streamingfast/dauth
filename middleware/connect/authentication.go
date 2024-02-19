@@ -7,6 +7,7 @@ import (
 
 	"github.com/streamingfast/dauth"
 	"github.com/streamingfast/dauth/middleware"
+	tracing "github.com/streamingfast/sf-tracing"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -19,6 +20,10 @@ func validateAuth(
 	headers http.Header,
 	peerAddr string,
 	authenticator dauth.Authenticator) (context.Context, error) {
+
+	if traceId := tracing.GetTraceID(ctx).String(); traceId != "" {
+		headers.Set("x-trace-id", traceId)
+	}
 
 	childCtx, err := authenticator.Authenticate(ctx, path, headers, middleware.RealIP(peerAddr, headers))
 	if err != nil {

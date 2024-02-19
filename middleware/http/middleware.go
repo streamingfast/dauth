@@ -7,6 +7,7 @@ import (
 	"github.com/streamingfast/dauth"
 	"github.com/streamingfast/dauth/middleware"
 	"github.com/streamingfast/derr"
+	tracing "github.com/streamingfast/sf-tracing"
 	"google.golang.org/grpc/codes"
 )
 
@@ -49,7 +50,12 @@ func (m *AuthMiddleware) Handler(next http.Handler) http.Handler {
 func validateAuth(r *http.Request, authenticator dauth.Authenticator) (*http.Request, error) {
 	ctx := r.Context()
 
-	ctx, err := authenticator.Authenticate(ctx, r.URL.String(), r.Header, middleware.RealIP(r.RemoteAddr, r.Header))
+	headers := r.Header.Clone()
+	if traceId := tracing.GetTraceID(ctx).String(); traceId != "" {
+		headers.Set("x-trace-id", traceId)
+	}
+
+	ctx, err := authenticator.Authenticate(ctx, r.URL.String(), headers, middleware.RealIP(r.RemoteAddr, headers))
 	if err != nil {
 		return nil, err
 	}
