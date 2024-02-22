@@ -3,10 +3,11 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"go.uber.org/zap"
 
 	"github.com/streamingfast/dauth"
 	pbauth "github.com/streamingfast/dauth/pb/sf/authentication/v1"
@@ -23,6 +24,7 @@ func Register() {
 		logger.Info("setting up grpc authenticator",
 			zap.String("config_url", configURL),
 			zap.String("endpoint", c.endpoint),
+			zap.Duration("interval", c.interval),
 			zap.Bool("continuous_auth", c.enabledContinuousAuth),
 		)
 		return newAuthenticator(c, logger)
@@ -46,7 +48,7 @@ func newAuthenticator(c *config, logger *zap.Logger) (*authenticatorPlugin, erro
 	ap := &authenticatorPlugin{
 		client:                pbauth.NewAuthenticationClient(conn),
 		enabledContinuousAuth: c.enabledContinuousAuth,
-		continuousInterval:    10 * time.Second,
+		continuousInterval:    c.interval,
 		healthClient:          pbhealth.NewHealthClient(conn),
 		logger:                logger,
 	}

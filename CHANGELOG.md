@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+* add 'interval' param to grpc continuous auth, default changed from "10s" to "60s"
 * move from deprecated `github.com/bufbuild/connect-go` to `connectrpc.com/connect`
 
 ### Added

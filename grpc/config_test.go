@@ -1,9 +1,11 @@
 package grpc
 
 import (
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_newConfig(t *testing.T) {
@@ -17,6 +19,7 @@ func Test_newConfig(t *testing.T) {
 			expect: &config{
 				endpoint:              "localhost:9018",
 				enabledContinuousAuth: false,
+				interval:              60 * time.Second,
 			},
 		},
 		{
@@ -24,6 +27,15 @@ func Test_newConfig(t *testing.T) {
 			expect: &config{
 				endpoint:              "localhost:9018",
 				enabledContinuousAuth: true,
+				interval:              60 * time.Second,
+			},
+		},
+		{
+			url: "grpc://localhost:9018?continuous=true&interval=5s",
+			expect: &config{
+				endpoint:              "localhost:9018",
+				enabledContinuousAuth: true,
+				interval:              5 * time.Second,
 			},
 		},
 	}
