@@ -11,6 +11,7 @@ const (
 	SFHeaderUserID   string = "x-sf-user-id"
 	SFHeaderApiKeyID string = "x-sf-api-key-id"
 	SFHeaderMeta     string = "x-sf-meta"
+	SFHeaderPlanTier string = "x-sf-plan-tier" // As of August 2025, one of FREE, SCALING, PRO, ENTERPRISE, CUSTOM
 	SFHeaderIP       string = "x-real-ip"
 )
 
