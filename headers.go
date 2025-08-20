@@ -22,7 +22,12 @@ type trustedHeadersKeyType int
 const trustedHeadersKey trustedHeadersKeyType = iota
 
 func WithTrustedHeaders(ctx context.Context, h TrustedHeaders) context.Context {
-	return context.WithValue(ctx, trustedHeadersKey, h)
+	lowercased := make(TrustedHeaders)
+	for k, v := range h {
+		lowercased[strings.ToLower(k)] = v
+	}
+
+	return context.WithValue(ctx, trustedHeadersKey, lowercased)
 }
 
 func FromContext(ctx context.Context) TrustedHeaders {
