@@ -100,7 +100,7 @@ func (a *authenticator) Authenticate(ctx context.Context, path string, headers m
 	out[dauth.HeaderUserID] = a.userID
 	out[dauth.HeaderApiKeyID] = a.apiKeyID
 	out[dauth.HeaderMeta] = a.meta
-	out[dauth.HeaderPlanTier] = a.planTier
+	out[dauth.HeaderSubstreamsPlanTier] = a.planTier
 
 	return dauth.WithTrustedHeaders(ctx, out), nil
 }

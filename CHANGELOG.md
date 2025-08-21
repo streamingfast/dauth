@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 * changed headers to remove the `x-sf` prefix, keeping only `x-` ("x-user-id" "x-api-key-id" "x-meta")
-* added `x-plan-tier` trusted header and `PlanTier()` to framework, documentation and null/secret implementations
+* added `x-substreams-plan-tier` trusted header and `SubstreamsPlanTier()` to framework, documentation and null/secret implementations
 * add 'interval' param to grpc continuous auth, default changed from "10s" to "60s"
 * move from deprecated `github.com/bufbuild/connect-go` to `connectrpc.com/connect`
 

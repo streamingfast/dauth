@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	HeaderUserID   string = "x-user-id"
-	HeaderApiKeyID string = "x-api-key-id"
-	HeaderMeta     string = "x-meta"
-	HeaderPlanTier string = "x-plan-tier" // As of August 2025, one of FREE, SCALING, PRO, ENTERPRISE
-	HeaderIP       string = "x-real-ip"
+	HeaderUserID             string = "x-user-id"
+	HeaderApiKeyID           string = "x-api-key-id"
+	HeaderMeta               string = "x-meta"
+	HeaderIP                 string = "x-real-ip"
+	HeaderSubstreamsPlanTier string = "x-substreams-plan-tier" // As of August 2025, one of FREE, SCALING, PRO, ENTERPRISE
 
 	deprecatedHeaderUserID   string = "x-sf-user-id"
 	deprecatedHeaderApiKeyID string = "x-sf-api-key-id"
@@ -67,8 +67,8 @@ func (h TrustedHeaders) RealIP() string {
 	return h[HeaderIP]
 }
 
-func (h TrustedHeaders) PlanTier() string {
-	return h[HeaderPlanTier]
+func (h TrustedHeaders) SubstreamsPlanTier() string {
+	return h[HeaderSubstreamsPlanTier]
 }
 
 func (h TrustedHeaders) Get(key string) string {

@@ -18,7 +18,7 @@ You can think of `TrustedHeaders` as HTTP headers. StreamingFast services will e
 - `x-user-id`
 - `x-api-key-id`
 - `x-real-ip`
-- `x-plan-tier`
+- `x-substreams-plan-tier`
 
 Applications like Substreams can have their own
 
@@ -69,7 +69,7 @@ The plugin upon valid request populate the trusted headers:
 - `x-user-id`
 - `x-api-key-id`
 - `x-real-ip`
-- `x-plan-tier`
+- `x-substreams-plan-tier`
 
 Where `x-real-ip` is the IP of the request and `x-user-id` and `x-api-key-id` to their respective config value `user_id` and `api_key_id` of the `secret://` URL. If the config value contains others values, they are treated as a trusted header right away and put in the trusted headers too.
 

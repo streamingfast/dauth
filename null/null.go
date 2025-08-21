@@ -26,7 +26,7 @@ func Register() {
 				case "meta":
 					headers[dauth.HeaderMeta] = values[0]
 				case "plan_tier":
-					headers[dauth.HeaderPlanTier] = values[0]
+					headers[dauth.HeaderSubstreamsPlanTier] = values[0]
 				default:
 					headers[strings.ToLower(key)] = strings.Join(values, ",")
 				}

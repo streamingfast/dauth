@@ -42,6 +42,6 @@ func TestNullPlugin_WithTrustedHeaderConfigured(t *testing.T) {
 	trustedHeaders := dauth.FromContext(outCtx)
 	require.Equal(t, dauth.TrustedHeaders{
 		dauth.HeaderIP: "1.1.1.1",
-		"x-substreams-stage-layer-max-parallel-executor": "4",
+		"x-substreams-stage-layer-parallel-executor-max-count": "4",
 	}, trustedHeaders)
 }
