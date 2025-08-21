@@ -8,11 +8,15 @@ import (
 )
 
 const (
-	SFHeaderUserID   string = "x-sf-user-id"
-	SFHeaderApiKeyID string = "x-sf-api-key-id"
-	SFHeaderMeta     string = "x-sf-meta"
-	SFHeaderPlanTier string = "x-sf-plan-tier" // As of August 2025, one of FREE, SCALING, PRO, ENTERPRISE, CUSTOM
-	SFHeaderIP       string = "x-real-ip"
+	HeaderUserID   string = "x-user-id"
+	HeaderApiKeyID string = "x-api-key-id"
+	HeaderMeta     string = "x-meta"
+	HeaderPlanTier string = "x-plan-tier" // As of August 2025, one of FREE, SCALING, PRO, ENTERPRISE
+	HeaderIP       string = "x-real-ip"
+
+	deprecatedHeaderUserID   string = "x-sf-user-id"
+	deprecatedHeaderApiKeyID string = "x-sf-api-key-id"
+	deprecatedHeaderMeta     string = "x-sf-meta"
 )
 
 type TrustedHeaders map[string]string
@@ -39,19 +43,32 @@ func FromContext(ctx context.Context) TrustedHeaders {
 }
 
 func (h TrustedHeaders) UserID() string {
-	return h[SFHeaderUserID]
+	if u, ok := h[HeaderUserID]; ok {
+		return u
+	}
+	return h[deprecatedHeaderUserID]
 }
 
 func (h TrustedHeaders) APIKeyID() string {
-	return h[SFHeaderApiKeyID]
+	if u, ok := h[HeaderApiKeyID]; ok {
+		return u
+	}
+	return h[deprecatedHeaderApiKeyID]
 }
 
 func (h TrustedHeaders) Meta() string {
-	return h[SFHeaderMeta]
+	if u, ok := h[HeaderMeta]; ok {
+		return u
+	}
+	return h[deprecatedHeaderMeta]
 }
 
 func (h TrustedHeaders) RealIP() string {
-	return h[SFHeaderIP]
+	return h[HeaderIP]
+}
+
+func (h TrustedHeaders) PlanTier() string {
+	return h[HeaderPlanTier]
 }
 
 func (h TrustedHeaders) Get(key string) string {

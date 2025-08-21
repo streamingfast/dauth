@@ -23,15 +23,15 @@ func (t testAuthenticators) Authenticate(ctx context.Context, path string, heade
 		out[key] = values[0]
 	}
 
-	out["x-sf-substreams-ll"] = "987"
-	out["x-sf-user-id"] = "a1b2c3"
+	out["x-substreams-ll"] = "987"
+	out["x-user-id"] = "a1b2c3"
 	return dauth.WithTrustedHeaders(ctx, out), nil
 }
 
 func Test_validAuth(t *testing.T) {
 	headers := metadata.New(map[string]string{
-		"authorization":      "bearer jwt_token",
-		"X-SF-SUBSTREAMS-LL": "123",
+		"authorization":   "bearer jwt_token",
+		"X-SUBSTREAMS-LL": "123",
 	})
 
 	ctx := metadata.NewIncomingContext(context.Background(), headers)
@@ -42,6 +42,6 @@ func Test_validAuth(t *testing.T) {
 
 	trusted := dauth.FromContext(ctx)
 
-	assert.Equal(t, "987", trusted.Get("x-sf-substreams-ll"))
-	assert.Equal(t, "a1b2c3", trusted.Get("X-Sf-User-ID"))
+	assert.Equal(t, "987", trusted.Get("x-substreams-ll"))
+	assert.Equal(t, "a1b2c3", trusted.Get("X-User-ID"))
 }

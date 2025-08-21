@@ -23,14 +23,14 @@ func TestNullPlugin_NoTrustedHeaderConfigured(t *testing.T) {
 
 	trustedHeaders := dauth.FromContext(outCtx)
 	require.Equal(t, dauth.TrustedHeaders{
-		dauth.SFHeaderIP: "1.1.1.1",
+		dauth.HeaderIP: "1.1.1.1",
 	}, trustedHeaders)
 }
 
 func TestNullPlugin_WithTrustedHeaderConfigured(t *testing.T) {
 	null.Register()
 
-	auth, err := dauth.New("null://?x-sf-substreams-stage-layer-parallel-executor-max-count=4", zlog)
+	auth, err := dauth.New("null://?x-substreams-stage-layer-parallel-executor-max-count=4", zlog)
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -41,7 +41,7 @@ func TestNullPlugin_WithTrustedHeaderConfigured(t *testing.T) {
 
 	trustedHeaders := dauth.FromContext(outCtx)
 	require.Equal(t, dauth.TrustedHeaders{
-		dauth.SFHeaderIP: "1.1.1.1",
-		"x-sf-substreams-stage-layer-max-parallel-executor": "4",
+		dauth.HeaderIP: "1.1.1.1",
+		"x-substreams-stage-layer-max-parallel-executor": "4",
 	}, trustedHeaders)
 }

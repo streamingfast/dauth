@@ -20,11 +20,13 @@ func Register() {
 			for key, values := range params {
 				switch key {
 				case "user_id":
-					headers[dauth.SFHeaderUserID] = values[0]
+					headers[dauth.HeaderUserID] = values[0]
 				case "api_key_id":
-					headers[dauth.SFHeaderApiKeyID] = values[0]
+					headers[dauth.HeaderApiKeyID] = values[0]
 				case "meta":
-					headers[dauth.SFHeaderMeta] = values[0]
+					headers[dauth.HeaderMeta] = values[0]
+				case "plan_tier":
+					headers[dauth.HeaderPlanTier] = values[0]
 				default:
 					headers[strings.ToLower(key)] = strings.Join(values, ",")
 				}
@@ -47,7 +49,7 @@ func (t *nullPlugin) Ready(_ context.Context) bool {
 
 func (t *nullPlugin) Authenticate(ctx context.Context, _ string, _ map[string][]string, ipAddress string) (context.Context, error) {
 	out := make(dauth.TrustedHeaders)
-	out[dauth.SFHeaderIP] = ipAddress
+	out[dauth.HeaderIP] = ipAddress
 
 	for key, value := range t.trustedHeaders {
 		out[key] = value

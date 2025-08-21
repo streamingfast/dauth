@@ -13,17 +13,18 @@ At it's core StreamingFast services will look for a `TrustedHeaders` object with
 - Trusted Plugin
 - gRPC Plugin
 
-You can think of `TrustedHeaders` as HTTP headers. StreamingFast services will expect (assuming the call is authenticated) at least 3 headers to identify the user.
+You can think of `TrustedHeaders` as HTTP headers. StreamingFast services will expect (assuming the call is authenticated) these headers to identify the user:
 
-- `x-sf-user-id`
-- `x-sf-api-key-id`
+- `x-user-id`
+- `x-api-key-id`
 - `x-real-ip`
+- `x-plan-tier`
 
-To control the execution of Substreams on a per-user basis the following `TrustedHeaders` can be set:
+Applications like Substreams can have their own
 
-- `X-Sf-Substreams-Stage-Layer-Parallel-Executor-Max-Count`
-- `X-Sf-Substreams-Parallel-Jobs`
-- `X-Sf-Substreams-Cache-Tag`
+- `x-substreams-parallel-workers`
+- `x-substreams-max-requests`
+  ...
 
 ### Plugins
 
@@ -38,14 +39,14 @@ which header to keep or trust is up to the implementation. The plugin is configu
 *Trusted Plugin*
 
 The trusted plugin simply acts as a pass-through. It will trust all incoming headers. This should be used if the proxy layer does the authorization and sets the trusted headers.
-You can change the default "trust-everything" behavior by specifying an exclusive list of `allowed` headers, ex: `trust://?allowed=x-sf-user-id,x-sf-api-key-id,x-real-ip,x-sf-substreams-cache-tag`
+You can change the default "trust-everything" behavior by specifying an exclusive list of `allowed` headers, ex: `trust://?allowed=x-user-id,x-api-key-id,x-real-ip,x-substreams-cache-tag`
 
 ![Trusted Plugin](./docs/trusted_plugin.png)
 
 *gRPC plugin*
 
 The gRPC plugin will perform a grpc request to the defined endpoint. The response will contain the `TrustedHeaders`. An example of this would be a `grpc://localhost:9000` where
-the gRPC service is a sidecar. This sidecar could, for example, read a JWT from the incoming `Authorization` header and return the appropriate values for the *TrustedHeaders* `x-sf-user-id` and `x-sf-api-key-id`.
+the gRPC service is a sidecar. This sidecar could, for example, read a JWT from the incoming `Authorization` header and return the appropriate values for the *TrustedHeaders* `x-user-id` and `x-api-key-id`.
 
 The motivation behind the gRPC plugin is to give the operator flexibility in implementing their authentication layer.
 
@@ -65,11 +66,12 @@ The secret plugin ensures that the request contains an `Authorization` header of
 
 The plugin upon valid request populate the trusted headers:
 
-- `x-sf-user-id`
-- `x-sf-api-key-id`
+- `x-user-id`
+- `x-api-key-id`
 - `x-real-ip`
+- `x-plan-tier`
 
-Where `x-real-ip` is the IP of the request and `x-sf-user-id` and `x-sf-api-key-id` to their respective config value `user_id` and `api_key_id` of the `secret://` URL. If the config value contains others values, they are treated as a trusted header right away and put in the trusted headers too.
+Where `x-real-ip` is the IP of the request and `x-user-id` and `x-api-key-id` to their respective config value `user_id` and `api_key_id` of the `secret://` URL. If the config value contains others values, they are treated as a trusted header right away and put in the trusted headers too.
 
 ## Contributing
 

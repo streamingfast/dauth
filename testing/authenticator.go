@@ -83,10 +83,10 @@ func newAuthenticator(secret string, userID string, apiKeyID string) (*authentic
 // Authenticate implements dauth.Authenticator.
 func (a *authenticator) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
 	out := make(dauth.TrustedHeaders)
-	out[dauth.SFHeaderIP] = ipAddress
-	out[dauth.SFHeaderUserID] = a.userID
-	out[dauth.SFHeaderApiKeyID] = a.apiKeyID
-	out[dauth.SFHeaderMeta] = a.meta
+	out[dauth.HeaderIP] = ipAddress
+	out[dauth.HeaderUserID] = a.userID
+	out[dauth.HeaderApiKeyID] = a.apiKeyID
+	out[dauth.HeaderMeta] = a.meta
 
 	return dauth.WithTrustedHeaders(ctx, out), nil
 }

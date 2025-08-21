@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+* changed headers to remove the `x-sf` prefix, keeping only `x-` ("x-user-id" "x-api-key-id" "x-meta")
+* added `x-plan-tier` trusted header and `PlanTier()` to framework, documentation and null/secret implementations
 * add 'interval' param to grpc continuous auth, default changed from "10s" to "60s"
 * move from deprecated `github.com/bufbuild/connect-go` to `connectrpc.com/connect`
 
@@ -12,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * added `x-trace-id` header in grpc request to dauth
 
-* Added back `secret` plugin support with the form `secret://this-is-the-secret-and-fits-in-the-host-field?[user_id=<value>]&[api_key_id=<value>]`.
+* Added back `secret` plugin support with the form `secret://this-is-the-secret-and-fits-in-the-host-field?[user_id=<value>]&[api_key_id=<value>]&[plan_tier=<value>]`.
 
 * Added continuous authentication support, enable by setting `grpc://localhost:9018?continuous=true`
 

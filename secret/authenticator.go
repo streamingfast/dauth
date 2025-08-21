@@ -48,6 +48,7 @@ type authenticator struct {
 	userID   string
 	apiKeyID string
 	meta     string
+	planTier string
 	others   map[string]string
 }
 
@@ -61,7 +62,7 @@ func newAuthenticatorFromURL(urlRaw string) (*authenticator, error) {
 
 	others := map[string]string{}
 	for key, values := range params {
-		if key != "user_id" && key != "api_key_id" && key != "meta" {
+		if key != "user_id" && key != "api_key_id" && key != "meta" && key != "plan_tier" {
 			others[strings.ToLower(key)] = strings.Join(values, ",")
 		}
 	}
@@ -71,6 +72,7 @@ func newAuthenticatorFromURL(urlRaw string) (*authenticator, error) {
 		userID:   params.Get("user_id"),
 		apiKeyID: params.Get("api_key_id"),
 		meta:     params.Get("meta"),
+		planTier: params.Get("plan_tier"),
 		others:   others,
 	}, nil
 }
@@ -94,10 +96,11 @@ func (a *authenticator) Authenticate(ctx context.Context, path string, headers m
 	}
 
 	out := make(dauth.TrustedHeaders)
-	out[dauth.SFHeaderIP] = ipAddress
-	out[dauth.SFHeaderUserID] = a.userID
-	out[dauth.SFHeaderApiKeyID] = a.apiKeyID
-	out[dauth.SFHeaderMeta] = a.meta
+	out[dauth.HeaderIP] = ipAddress
+	out[dauth.HeaderUserID] = a.userID
+	out[dauth.HeaderApiKeyID] = a.apiKeyID
+	out[dauth.HeaderMeta] = a.meta
+	out[dauth.HeaderPlanTier] = a.planTier
 
 	return dauth.WithTrustedHeaders(ctx, out), nil
 }
