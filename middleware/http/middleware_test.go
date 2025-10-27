@@ -41,6 +41,6 @@ func TestAuthMiddleware_validateAuth(t *testing.T) {
 
 	trusted := dauth.FromContext(newRequest.Context())
 
-	assert.Equal(t, "987", trusted.Get("x-substreams-ll"))
+	assert.Equal(t, "123", trusted.Get("x-substreams-ll"))
 	assert.Equal(t, "a1b2c3", trusted.Get("X-User-ID"))
 }

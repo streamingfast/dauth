@@ -8,7 +8,16 @@ import (
 )
 
 const (
-	HeaderUserID             string = "x-user-id"
+	// Deprecated: Use `HeaderOrganizationID`, we might in the future keep both header,
+	// but the meaning of both will change. For now, you can assume that user id == organization id
+	// as it's how we bill and organize things for now.
+	HeaderUserID string = "x-user-id"
+
+	// HeaderOrganizationID is the header carrying the organization id, the actual header is
+	// named x-user-id for backward compatibility reasons to keep downstream impact minimal for
+	// now, but it's really populated with the organization id.
+	HeaderOrganizationID string = "x-user-id"
+
 	HeaderApiKeyID           string = "x-api-key-id"
 	HeaderMeta               string = "x-meta"
 	HeaderIP                 string = "x-real-ip"
