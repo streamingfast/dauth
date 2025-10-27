@@ -40,7 +40,7 @@ type authenticatorPlugin struct {
 }
 
 func newAuthenticator(c *config, logger *zap.Logger) (*authenticatorPlugin, error) {
-	conn, err := dgrpc.NewInternalNoWaitClient(c.endpoint)
+	conn, err := dgrpc.NewInternalNoWaitClientConn(c.endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("new auth grpc client: %w", err)
 	}
