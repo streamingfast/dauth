@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/streamingfast/dauth"
@@ -20,7 +21,7 @@ func (t testAuthenticators) Ready(_ context.Context) bool {
 func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
 	out := make(dauth.TrustedHeaders)
 	for key, values := range headers {
-		out[key] = values[0]
+		out[strings.ToLower(key)] = values[0]
 	}
 	out["x-substreams-ll"] = "987"
 	out["x-user-id"] = "a1b2c3"
@@ -41,6 +42,6 @@ func TestAuthMiddleware_validateAuth(t *testing.T) {
 
 	trusted := dauth.FromContext(newRequest.Context())
 
-	assert.Equal(t, "123", trusted.Get("x-substreams-ll"))
+	assert.Equal(t, "987", trusted.Get("x-substreams-ll"))
 	assert.Equal(t, "a1b2c3", trusted.Get("X-User-ID"))
 }
