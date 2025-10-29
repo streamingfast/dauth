@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	// Deprecated: Use `HeaderOrganizationID`, we might in the future keep both header,
+	// Deprecated: Use [HeaderOrganizationID] instead, we might in the future keep both header,
 	// but the meaning of both will change. For now, you can assume that user id == organization id
 	// as it's how we bill and organize things for now.
 	HeaderUserID string = "x-user-id"
@@ -23,9 +23,15 @@ const (
 	HeaderIP                 string = "x-real-ip"
 	HeaderSubstreamsPlanTier string = "x-substreams-plan-tier" // As of August 2025, one of FREE, SCALING, PRO, ENTERPRISE
 
-	deprecatedHeaderUserID   string = "x-sf-user-id"
-	deprecatedHeaderApiKeyID string = "x-sf-api-key-id"
-	deprecatedHeaderMeta     string = "x-sf-meta"
+	// Internal: Do not use, only use while transitioning to the new header name,
+	// will be removed in the future, always use [HeaderOrganizationID]
+	// instead of this.
+	HeaderNewOrganizationID string = "x-organization-id"
+
+	deprecatedHeaderUserID     string = "x-user-id"
+	deprecatedSfHeaderUserID   string = "x-sf-user-id"
+	deprecatedSfHeaderApiKeyID string = "x-sf-api-key-id"
+	deprecatedSfHeaderMeta     string = "x-sf-meta"
 )
 
 type TrustedHeaders map[string]string
@@ -51,25 +57,40 @@ func FromContext(ctx context.Context) TrustedHeaders {
 	return val.(TrustedHeaders)
 }
 
+// Deprecated: use [OrganizationID] instead, the [HeaderUserID] now carries the organization id.
+// (the [HeaderUserID] is kept for backward compatibility reasons but is also deprecated, use
+// [HeaderOrganizationID] instead).
 func (h TrustedHeaders) UserID() string {
-	if u, ok := h[HeaderUserID]; ok {
+	if u, ok := h[deprecatedHeaderUserID]; ok {
 		return u
 	}
-	return h[deprecatedHeaderUserID]
+	return h[deprecatedSfHeaderUserID]
+}
+
+// OrganizationID returns the organization id present in the trusted headers,
+// returns "" if not present.
+func (h TrustedHeaders) OrganizationID() string {
+	if u, ok := h[HeaderNewOrganizationID]; ok {
+		return u
+	}
+	if u, ok := h[deprecatedHeaderUserID]; ok {
+		return u
+	}
+	return h[deprecatedSfHeaderUserID]
 }
 
 func (h TrustedHeaders) APIKeyID() string {
 	if u, ok := h[HeaderApiKeyID]; ok {
 		return u
 	}
-	return h[deprecatedHeaderApiKeyID]
+	return h[deprecatedSfHeaderApiKeyID]
 }
 
 func (h TrustedHeaders) Meta() string {
 	if u, ok := h[HeaderMeta]; ok {
 		return u
 	}
-	return h[deprecatedHeaderMeta]
+	return h[deprecatedSfHeaderMeta]
 }
 
 func (h TrustedHeaders) RealIP() string {
