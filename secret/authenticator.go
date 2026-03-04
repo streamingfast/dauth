@@ -97,10 +97,19 @@ func (a *authenticator) Authenticate(ctx context.Context, path string, headers m
 
 	out := make(dauth.TrustedHeaders)
 	out[dauth.HeaderIP] = ipAddress
+
 	out[dauth.HeaderUserID] = a.userID
 	out[dauth.HeaderApiKeyID] = a.apiKeyID
 	out[dauth.HeaderMeta] = a.meta
 	out[dauth.HeaderSubstreamsPlanTier] = a.planTier
+
+	for key, values := range headers {
+		lowerKey := strings.ToLower(key)
+		if key == "authorization" {
+			continue
+		}
+		out[lowerKey] = values[0]
+	}
 
 	return dauth.WithTrustedHeaders(ctx, out), nil
 }
