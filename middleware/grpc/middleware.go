@@ -13,7 +13,7 @@ import (
 func UnaryAuthChecker(check dauth.Authenticator, logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 
-		childCtx, err := validateAuth(ctx, info.FullMethod, check)
+		childCtx, err := validateAuth(ctx, info.FullMethod, check, logger)
 		if err != nil {
 			return nil, obfuscateErrorMessage(err, logger)
 		}
@@ -24,7 +24,7 @@ func UnaryAuthChecker(check dauth.Authenticator, logger *zap.Logger) grpc.UnaryS
 
 func StreamAuthChecker(check dauth.Authenticator, logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		childCtx, err := validateAuth(ss.Context(), info.FullMethod, check)
+		childCtx, err := validateAuth(ss.Context(), info.FullMethod, check, logger)
 		if err != nil {
 			return obfuscateErrorMessage(err, logger)
 		}

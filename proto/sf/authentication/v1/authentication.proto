@@ -23,4 +23,15 @@ message Header {
 
 message AuthResponse {
   repeated Header authenticated_headers = 3;
+  // Key-value pairs indicating service cut-off reasons, the key will always be
+  // one of:
+  // - "substreams"
+  // - "token_api"
+  //
+  // And the values will be human-readable explanations for the cut-off in English.
+  // If a service is in the map, it means the service is cut-off and caller should
+  // act accordingly.
+  //
+  // Otherwise, if a service is assumed to be allowed.
+  map<string, string> service_cut_off = 4;
 }

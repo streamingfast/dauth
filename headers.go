@@ -2,6 +2,8 @@ package dauth
 
 import (
 	"context"
+	"maps"
+	"slices"
 	"strings"
 
 	"google.golang.org/grpc/metadata"
@@ -107,4 +109,9 @@ func (h TrustedHeaders) Get(key string) string {
 
 func (h TrustedHeaders) ToOutgoingGRPCContext(ctx context.Context) context.Context {
 	return metadata.NewOutgoingContext(ctx, metadata.New(h))
+}
+
+// Names returns the list of header names present in the TrustedHeaders.
+func (h TrustedHeaders) Names() []string {
+	return slices.Collect(maps.Keys(h))
 }

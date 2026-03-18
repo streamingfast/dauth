@@ -5,10 +5,17 @@ import (
 	"testing"
 
 	"github.com/streamingfast/dauth"
+	"github.com/streamingfast/logging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
 )
+
+var zlogTest, _ = logging.PackageLogger("test", "github.com/streamingfast/dauth/middleware/grpc/authentication/test")
+
+func init() {
+	logging.InstantiateLoggers()
+}
 
 type testAuthenticators struct {
 }
@@ -37,7 +44,7 @@ func Test_validAuth(t *testing.T) {
 	ctx := metadata.NewIncomingContext(context.Background(), headers)
 	authenticator := &testAuthenticators{}
 
-	ctx, err := validateAuth(ctx, "/package.service/method", authenticator)
+	ctx, err := validateAuth(ctx, "/package.service/method", authenticator, zlogTest)
 	require.NoError(t, err)
 
 	trusted := dauth.FromContext(ctx)
