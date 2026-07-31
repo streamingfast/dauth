@@ -43,7 +43,10 @@ func obfuscateErrorMessage(err error, logger *zap.Logger) error {
 		}
 		return status.Error(st.Code(), msg)
 	} else {
-		logger.Error("authentication service via gRPC middleware non-gRPC error", zap.Error(err))
+		// A non-gRPC error here means the authenticator rejected the request itself (missing/malformed
+		// credentials, expired token, unknown API key). That's a client-side condition, not a server
+		// fault, so it must not pollute error logs nor error-rate alerting.
+		logger.Debug("authentication service via gRPC middleware non-gRPC error", zap.Error(err))
 	}
 
 	return status.Errorf(codes.Unauthenticated, "authentication: %s", err.Error())

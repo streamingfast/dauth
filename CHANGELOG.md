@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Added `x-sf-meta` header to pass arbitrary metadata as trusted headers.
 
+### Changed
+
+* Demote the `non-gRPC error` auth-middleware log from `Error` to `Debug` in both `middleware/connect` and `middleware/grpc` — a client failing to authenticate is not a server error, and at `Error` it flooded logs and error-rate alerts. Genuine auth-service failures (`Internal`, `Unavailable`, `Unknown`) still log at `Error`.
+
 ## 2020-03-21
 
 ### Changed
