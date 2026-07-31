@@ -78,7 +78,10 @@ func obfuscateErrorMessage(ctx context.Context, err error, logger *zap.Logger) e
 		}
 		return connect.NewError(connect.Code(st.Code()), errors.New(msg))
 	} else {
-		logger.Check(level, "authentication service via Connect-Web middleware non-gRPC error").Write(zap.Error(err))
+		// A non-gRPC error here means the authenticator rejected the request itself (missing/malformed
+		// credentials, expired token, unknown API key). That's a client-side condition, not a server
+		// fault, so it must not pollute error logs nor error-rate alerting.
+		logger.Debug("authentication service via Connect-Web middleware non-gRPC error", zap.Error(err))
 
 		if v := (*dauth.ErrInvalidAuthentication)(nil); errors.As(err, &v) {
 			return connect.NewError(connect.Code(codes.Unauthenticated), errors.New(v.Error()))
