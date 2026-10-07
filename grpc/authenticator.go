@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"maps"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -92,16 +93,20 @@ func (a *authenticatorPlugin) Authenticate(ctx context.Context, path string, hea
 		return nil, err
 	}
 
+	ctx, cancel := context.WithCancelCause(ctx)
+	ctx = dauth.WithTrustedHeaders(ctx, toTrustedHeaders(resp))
+
+	go a.continuousAuth(ctx, req, cancel)
+
+	return ctx, nil
+}
+
+func toTrustedHeaders(resp *pbauth.AuthResponse) dauth.TrustedHeaders {
 	out := make(dauth.TrustedHeaders)
 	for _, authenticatedHeader := range resp.AuthenticatedHeaders {
 		out[strings.ToLower(authenticatedHeader.Key)] = authenticatedHeader.Value
 	}
-
-	ctx, cancel := context.WithCancelCause(ctx)
-
-	go a.continuousAuth(ctx, req, cancel)
-
-	return dauth.WithTrustedHeaders(ctx, out), nil
+	return out
 }
 
 func (a *authenticatorPlugin) continuousAuth(ctx context.Context, req *pbauth.AuthRequest, cancel context.CancelCauseFunc) {
@@ -118,9 +123,35 @@ func (a *authenticatorPlugin) continuousAuth(ctx context.Context, req *pbauth.Au
 
 		req.AuthCount++
 
-		if _, err := a.client.Authenticate(context.Background(), req); err != nil {
+		resp, err := a.client.Authenticate(context.Background(), req)
+		if err != nil {
 			cancel(err)
 			return
 		}
+
+		a.refreshTrustedHeaders(ctx, resp)
 	}
+}
+
+// refreshTrustedHeaders adds or updates headers from a continuous auth response, never removes them.
+func (a *authenticatorPlugin) refreshTrustedHeaders(ctx context.Context, resp *pbauth.AuthResponse) {
+	refreshed := toTrustedHeaders(resp)
+	if len(refreshed) == 0 {
+		return
+	}
+
+	current := dauth.FromContext(ctx)
+	merged := maps.Clone(current)
+	if merged == nil {
+		merged = make(dauth.TrustedHeaders, len(refreshed))
+	}
+	maps.Copy(merged, refreshed)
+	if maps.Equal(merged, current) {
+		return
+	}
+
+	if a.logger != nil {
+		a.logger.Debug("continuous authentication refreshed trusted headers", zap.Strings("headers", refreshed.Names()))
+	}
+	dauth.ReplaceTrustedHeaders(ctx, merged)
 }

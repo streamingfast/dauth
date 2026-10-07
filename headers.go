@@ -5,6 +5,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"sync/atomic"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -42,21 +43,42 @@ type trustedHeadersKeyType int
 
 const trustedHeadersKey trustedHeadersKeyType = iota
 
+type trustedHeadersHolder struct {
+	headers atomic.Pointer[TrustedHeaders]
+}
+
 func WithTrustedHeaders(ctx context.Context, h TrustedHeaders) context.Context {
-	lowercased := make(TrustedHeaders)
+	holder := &trustedHeadersHolder{}
+	holder.headers.Store(lowercase(h))
+
+	return context.WithValue(ctx, trustedHeadersKey, holder)
+}
+
+// FromContext returns a snapshot of the trusted headers, call it again to see a later [ReplaceTrustedHeaders].
+func FromContext(ctx context.Context) TrustedHeaders {
+	holder, ok := ctx.Value(trustedHeadersKey).(*trustedHeadersHolder)
+	if !ok {
+		return nil
+	}
+	return *holder.headers.Load()
+}
+
+// ReplaceTrustedHeaders swaps the trusted headers of ctx and every context derived from it.
+func ReplaceTrustedHeaders(ctx context.Context, h TrustedHeaders) bool {
+	holder, ok := ctx.Value(trustedHeadersKey).(*trustedHeadersHolder)
+	if !ok {
+		return false
+	}
+	holder.headers.Store(lowercase(h))
+	return true
+}
+
+func lowercase(h TrustedHeaders) *TrustedHeaders {
+	lowercased := make(TrustedHeaders, len(h))
 	for k, v := range h {
 		lowercased[strings.ToLower(k)] = v
 	}
-
-	return context.WithValue(ctx, trustedHeadersKey, lowercased)
-}
-
-func FromContext(ctx context.Context) TrustedHeaders {
-	val := ctx.Value(trustedHeadersKey)
-	if val == nil {
-		return nil
-	}
-	return val.(TrustedHeaders)
+	return &lowercased
 }
 
 // Deprecated: use [OrganizationID] instead, the [HeaderUserID] now carries the organization id.
