@@ -3,13 +3,15 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"testing"
+	"testing/synctest"
+	"time"
+
 	"github.com/streamingfast/dauth"
 	pbauth "github.com/streamingfast/dauth/pb/sf/authentication/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"testing"
-	"time"
 )
 
 type mockClient struct {
@@ -29,38 +31,31 @@ func (m *mockClient) Authenticate(ctx context.Context, in *pbauth.AuthRequest, o
 }
 
 func TestAuthenticatorPlugin_ContinuousAuthenticate(t *testing.T) {
-	parentCtx := context.Background()
-	header := map[string][]string{
-		"x-user-id":   []string{"userid"},
-		"x-apikey-id": []string{"apiKey"},
-	}
-	ipAddress := "192.168.1.1"
-	continuousInternal := 10 * time.Millisecond
-	failOnCount := uint64(3)
-	// should be greater than (failOnCount * continuousInternal) + small bugger
-	testDuration := 35 * time.Millisecond
-
-	mockClient := &mockClient{failOnCount: failOnCount}
-	a := &authenticatorPlugin{
-		client:                mockClient,
-		continuousInterval:    continuousInternal,
-		enabledContinuousAuth: true,
-	}
-
-	authenticatedCtx, err := a.Authenticate(parentCtx, "sf.firehose.v1/Blocks", header, ipAddress)
-	require.NoError(t, err)
-
-	for {
-		select {
-		case <-authenticatedCtx.Done():
-			require.Equal(t, context.Canceled, authenticatedCtx.Err())
-			require.Equal(t, "authentication failure", context.Cause(authenticatedCtx).Error())
-			return
-		case <-time.After(testDuration):
-			assert.Fail(t, "the context should have been canceled by now")
+	synctest.Test(t, func(t *testing.T) {
+		header := map[string][]string{
+			"x-user-id":   {"userid"},
+			"x-apikey-id": {"apiKey"},
 		}
-	}
 
+		a := &authenticatorPlugin{
+			client:                &mockClient{failOnCount: 3},
+			continuousInterval:    time.Second,
+			enabledContinuousAuth: true,
+		}
+
+		authenticatedCtx, err := a.Authenticate(context.Background(), "sf.firehose.v1/Blocks", header, "192.168.1.1")
+		require.NoError(t, err)
+
+		// AuthCount 2 succeeds, AuthCount 3 fails
+		time.Sleep(time.Second)
+		synctest.Wait()
+		require.NoError(t, authenticatedCtx.Err())
+
+		time.Sleep(time.Second)
+		synctest.Wait()
+		require.Equal(t, context.Canceled, authenticatedCtx.Err())
+		require.Equal(t, "authentication failure", context.Cause(authenticatedCtx).Error())
+	})
 }
 
 type scriptedClient struct {
@@ -76,30 +71,35 @@ func (m *scriptedClient) Authenticate(ctx context.Context, in *pbauth.AuthReques
 }
 
 func TestAuthenticatorPlugin_ContinuousAuthenticate_RefreshesHeaders(t *testing.T) {
-	client := &scriptedClient{responses: map[uint64]map[string]string{
-		// other counts get an empty response, like a fail-open authenticator
-		2: {"x-user-id": "userid", "x-meta": "meta"},
-	}}
-	a := &authenticatorPlugin{
-		client:                client,
-		continuousInterval:    5 * time.Millisecond,
-		enabledContinuousAuth: true,
-	}
+	synctest.Test(t, func(t *testing.T) {
+		client := &scriptedClient{responses: map[uint64]map[string]string{
+			// other counts get an empty response, like a fail-open authenticator
+			2: {"x-user-id": "userid", "x-meta": "meta"},
+		}}
+		a := &authenticatorPlugin{
+			client:                client,
+			continuousInterval:    time.Second,
+			enabledContinuousAuth: true,
+		}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 
-	authenticatedCtx, err := a.Authenticate(ctx, "sf.firehose.v2.Stream/Blocks", nil, "192.168.1.1")
-	require.NoError(t, err)
-	assert.Equal(t, "", dauth.FromContext(authenticatedCtx).Meta())
+		authenticatedCtx, err := a.Authenticate(ctx, "sf.firehose.v2.Stream/Blocks", nil, "192.168.1.1")
+		require.NoError(t, err)
+		assert.Equal(t, "", dauth.FromContext(authenticatedCtx).Meta())
 
-	assert.Eventually(t, func() bool {
-		return dauth.FromContext(authenticatedCtx).Meta() == "meta"
-	}, time.Second, time.Millisecond)
+		// AuthCount 2 returns the headers
+		time.Sleep(time.Second)
+		synctest.Wait()
+		assert.Equal(t, "meta", dauth.FromContext(authenticatedCtx).Meta())
 
-	time.Sleep(25 * time.Millisecond)
-	headers := dauth.FromContext(authenticatedCtx)
-	assert.Equal(t, "meta", headers.Meta())
-	assert.Equal(t, "userid", headers.UserID())
-	require.NoError(t, authenticatedCtx.Err())
+		// later empty responses must not remove them
+		time.Sleep(5 * time.Second)
+		synctest.Wait()
+		headers := dauth.FromContext(authenticatedCtx)
+		assert.Equal(t, "meta", headers.Meta())
+		assert.Equal(t, "userid", headers.UserID())
+		require.NoError(t, authenticatedCtx.Err())
+	})
 }

@@ -134,6 +134,9 @@ func (a *authenticatorPlugin) continuousAuth(ctx context.Context, req *pbauth.Au
 }
 
 // refreshTrustedHeaders adds or updates headers from a continuous auth response, never removes them.
+// An empty response (e.g. a fail-open authenticator) is a no-op, it cannot be told apart from an
+// authoritative empty set, so a header the server stops sending stays for the stream lifetime.
+// Only continuousAuth writes the headers of its context, so the read-modify-write is not racy.
 func (a *authenticatorPlugin) refreshTrustedHeaders(ctx context.Context, resp *pbauth.AuthResponse) {
 	refreshed := toTrustedHeaders(resp)
 	if len(refreshed) == 0 {

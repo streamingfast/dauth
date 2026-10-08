@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * add 'interval' param to grpc continuous auth, default changed from "10s" to "60s"
 * move from deprecated `github.com/bufbuild/connect-go` to `connectrpc.com/connect`
 * grpc continuous auth now merges each response's headers into the stream's trusted headers (added `ReplaceTrustedHeaders`), so a stream whose first authentication returned no headers picks them up on the next continuous call; `FromContext` returns a snapshot, read it again to see refreshed values
+* bump minimum Go version to 1.25
 
 ### Added
 
