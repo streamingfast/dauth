@@ -3,11 +3,12 @@ package server
 import (
 	"context"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/streamingfast/dauth"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/test-go/testify/assert"
 )
 
 type testAuthenticators struct {
@@ -22,7 +23,9 @@ func (t testAuthenticators) Ready(_ context.Context) bool {
 func (t testAuthenticators) Authenticate(ctx context.Context, path string, headers map[string][]string, ipAddress string) (context.Context, error) {
 	out := make(dauth.TrustedHeaders)
 	for key, values := range headers {
-		out[key] = values[0]
+		// Lower-case like real authenticators do, otherwise "X-SUBSTREAMS-Ll" and "x-substreams-ll"
+		// collide in [dauth.WithTrustedHeaders] and the winner depends on map iteration order.
+		out[strings.ToLower(key)] = values[0]
 	}
 	out["x-substreams-ll"] = "987"
 	out["x-user-id"] = "a1b2c3"

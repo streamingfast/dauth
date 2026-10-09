@@ -9,7 +9,6 @@ require (
 	github.com/streamingfast/logging v0.0.0-20220304214715-bc750a74b424
 	github.com/streamingfast/sf-tracing v0.0.0-20240209202324-9daa52c71a52
 	github.com/stretchr/testify v1.11.1
-	github.com/test-go/testify v1.1.4
 	go.uber.org/zap v1.21.0
 	google.golang.org/grpc v1.77.0
 	google.golang.org/protobuf v1.36.10
