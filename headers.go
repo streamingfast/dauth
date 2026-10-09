@@ -5,6 +5,7 @@ import (
 	"maps"
 	"slices"
 	"strings"
+	"sync/atomic"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -42,21 +43,50 @@ type trustedHeadersKeyType int
 
 const trustedHeadersKey trustedHeadersKeyType = iota
 
+type trustedHeadersHolder struct {
+	headers atomic.Pointer[TrustedHeaders]
+}
+
+// WithTrustedHeaders attaches h to a new context through a fresh holder. Calling it again on a
+// context that already carries trusted headers shadows them: the returned context and its
+// children no longer see a [ReplaceTrustedHeaders] made on the parent context.
 func WithTrustedHeaders(ctx context.Context, h TrustedHeaders) context.Context {
-	lowercased := make(TrustedHeaders)
+	holder := &trustedHeadersHolder{}
+	holder.headers.Store(lowercase(h))
+
+	return context.WithValue(ctx, trustedHeadersKey, holder)
+}
+
+// FromContext returns a snapshot of the trusted headers, call it again to see a later [ReplaceTrustedHeaders].
+//
+// The returned map is shared with every other reader of ctx and must not be modified, a
+// concurrent [ReplaceTrustedHeaders] (e.g. from continuous authentication) reads it.
+func FromContext(ctx context.Context) TrustedHeaders {
+	holder, ok := ctx.Value(trustedHeadersKey).(*trustedHeadersHolder)
+	if !ok {
+		return nil
+	}
+	return *holder.headers.Load()
+}
+
+// ReplaceTrustedHeaders swaps the trusted headers of ctx and every context derived from it,
+// returning false if ctx carries no trusted headers. The swap is atomic but a read-modify-write
+// built on [FromContext] is not, callers must ensure a single writer per context.
+func ReplaceTrustedHeaders(ctx context.Context, h TrustedHeaders) bool {
+	holder, ok := ctx.Value(trustedHeadersKey).(*trustedHeadersHolder)
+	if !ok {
+		return false
+	}
+	holder.headers.Store(lowercase(h))
+	return true
+}
+
+func lowercase(h TrustedHeaders) *TrustedHeaders {
+	lowercased := make(TrustedHeaders, len(h))
 	for k, v := range h {
 		lowercased[strings.ToLower(k)] = v
 	}
-
-	return context.WithValue(ctx, trustedHeadersKey, lowercased)
-}
-
-func FromContext(ctx context.Context) TrustedHeaders {
-	val := ctx.Value(trustedHeadersKey)
-	if val == nil {
-		return nil
-	}
-	return val.(TrustedHeaders)
+	return &lowercased
 }
 
 // Deprecated: use [OrganizationID] instead, the [HeaderUserID] now carries the organization id.
