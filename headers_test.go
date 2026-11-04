@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -66,4 +67,74 @@ func TestReplaceTrustedHeaders(t *testing.T) {
 func TestReplaceTrustedHeaders_NoHeaders(t *testing.T) {
 	assert.False(t, ReplaceTrustedHeaders(context.Background(), TrustedHeaders{HeaderUserID: "my-user-id"}))
 	assert.Nil(t, FromContext(context.Background()))
+}
+
+func TestAuthHeaders(t *testing.T) {
+	tests := []struct {
+		name       string
+		headers    TrustedHeaders
+		method     string
+		bucket     string
+		iat, exp   int64
+		iatOK      bool
+		expOK      bool
+		wantFields []zap.Field
+	}{
+		{name: "nil", headers: nil, wantFields: []zap.Field{}},
+		{name: "empty", headers: TrustedHeaders{}, wantFields: []zap.Field{}},
+		{
+			name:       "api_key",
+			headers:    TrustedHeaders{HeaderAuthMethod: "api_key"},
+			method:     "api_key",
+			wantFields: []zap.Field{zap.String("auth_method", "api_key")},
+		},
+		{
+			name: "jwt valid",
+			headers: TrustedHeaders{
+				HeaderAuthMethod:            "jwt",
+				HeaderAuthJWTLifetimeBucket: "le_15m",
+				HeaderAuthJWTIssuedAt:       "1700000000",
+				HeaderAuthJWTExpiresAt:      "1700000900",
+			},
+			method: "jwt", bucket: "le_15m",
+			iat: 1700000000, iatOK: true, exp: 1700000900, expOK: true,
+			wantFields: []zap.Field{
+				zap.String("auth_method", "jwt"),
+				zap.String("auth_jwt_lifetime_bucket", "le_15m"),
+				zap.Int64("auth_jwt_iat", 1700000000),
+				zap.Int64("auth_jwt_exp", 1700000900),
+			},
+		},
+		{
+			name: "jwt unparseable iat/exp",
+			headers: TrustedHeaders{
+				HeaderAuthMethod:            "jwt",
+				HeaderAuthJWTLifetimeBucket: "unknown",
+				HeaderAuthJWTIssuedAt:       "not-a-number",
+				HeaderAuthJWTExpiresAt:      "",
+			},
+			method: "jwt", bucket: "unknown",
+			wantFields: []zap.Field{
+				zap.String("auth_method", "jwt"),
+				zap.String("auth_jwt_lifetime_bucket", "unknown"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.method, tt.headers.AuthMethod())
+			assert.Equal(t, tt.bucket, tt.headers.AuthJWTLifetimeBucket())
+
+			iat, ok := tt.headers.AuthJWTIssuedAt()
+			assert.Equal(t, tt.iatOK, ok)
+			assert.Equal(t, tt.iat, iat)
+
+			exp, ok := tt.headers.AuthJWTExpiresAt()
+			assert.Equal(t, tt.expOK, ok)
+			assert.Equal(t, tt.exp, exp)
+
+			assert.Equal(t, tt.wantFields, tt.headers.AuthLogFields())
+		})
+	}
 }
