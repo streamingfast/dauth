@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* added `x-auth-method`, `x-auth-jwt-lifetime-bucket`, `x-auth-jwt-iat` and `x-auth-jwt-exp` header constants, `TrustedHeaders` accessors (`AuthMethod()`, `AuthJWTLifetimeBucket()`, `AuthJWTIssuedAt()`, `AuthJWTExpiresAt()`) and `AuthLogFields()` zap helper
+
 * added `x-trace-id` header in grpc request to dauth
 
 * Added back `secret` plugin support with the form `secret://this-is-the-secret-and-fits-in-the-host-field?[user_id=<value>]&[api_key_id=<value>]&[plan_tier=<value>]`.

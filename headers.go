@@ -4,9 +4,11 @@ import (
 	"context"
 	"maps"
 	"slices"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -26,6 +28,20 @@ const (
 	HeaderIP                 string = "x-real-ip"
 	HeaderSubstreamsPlanTier string = "x-substreams-plan-tier" // As of August 2025, one of FREE, SCALING, PRO, ENTERPRISE
 
+	// HeaderAuthMethod is the header carrying how the request authenticated, one of
+	// [AuthMethodJWT] or [AuthMethodAPIKey].
+	HeaderAuthMethod string = "x-auth-method"
+
+	// HeaderAuthJWTLifetimeBucket is the header carrying the lifetime bucket of the JWT used (JWT only),
+	// one of the AuthJWTLifetimeBucket* values.
+	HeaderAuthJWTLifetimeBucket string = "x-auth-jwt-lifetime-bucket"
+
+	// HeaderAuthJWTIssuedAt is the header carrying the JWT `iat` as unix seconds (JWT only).
+	HeaderAuthJWTIssuedAt string = "x-auth-jwt-iat"
+
+	// HeaderAuthJWTExpiresAt is the header carrying the JWT `exp` as unix seconds (JWT only).
+	HeaderAuthJWTExpiresAt string = "x-auth-jwt-exp"
+
 	// Internal: Do not use, only use while transitioning to the new header name,
 	// will be removed in the future, always use [HeaderOrganizationID]
 	// instead of this.
@@ -35,6 +51,21 @@ const (
 	deprecatedSfHeaderUserID   string = "x-sf-user-id"
 	deprecatedSfHeaderApiKeyID string = "x-sf-api-key-id"
 	deprecatedSfHeaderMeta     string = "x-sf-meta"
+)
+
+// Values of [HeaderAuthMethod].
+const (
+	AuthMethodJWT    string = "jwt"
+	AuthMethodAPIKey string = "api_key"
+)
+
+// Values of [HeaderAuthJWTLifetimeBucket].
+const (
+	AuthJWTLifetimeBucketLE15m   string = "le_15m"
+	AuthJWTLifetimeBucketLE24h   string = "le_24h"
+	AuthJWTLifetimeBucketGT24h   string = "gt_24h"
+	AuthJWTLifetimeBucketGTE10y  string = "gte_10y"
+	AuthJWTLifetimeBucketUnknown string = "unknown"
 )
 
 type TrustedHeaders map[string]string
@@ -131,6 +162,52 @@ func (h TrustedHeaders) RealIP() string {
 
 func (h TrustedHeaders) SubstreamsPlanTier() string {
 	return h[HeaderSubstreamsPlanTier]
+}
+
+// AuthMethod returns the authentication method ([AuthMethodJWT] or [AuthMethodAPIKey]),
+// returns "" if not present.
+func (h TrustedHeaders) AuthMethod() string {
+	return h[HeaderAuthMethod]
+}
+
+// AuthJWTLifetimeBucket returns the JWT lifetime bucket, returns "" if not present.
+func (h TrustedHeaders) AuthJWTLifetimeBucket() string {
+	return h[HeaderAuthJWTLifetimeBucket]
+}
+
+// AuthJWTIssuedAt returns the JWT issued-at as unix seconds, ok is false if absent or not parseable.
+func (h TrustedHeaders) AuthJWTIssuedAt() (int64, bool) {
+	return h.int64Header(HeaderAuthJWTIssuedAt)
+}
+
+// AuthJWTExpiresAt returns the JWT expiry as unix seconds, ok is false if absent or not parseable.
+func (h TrustedHeaders) AuthJWTExpiresAt() (int64, bool) {
+	return h.int64Header(HeaderAuthJWTExpiresAt)
+}
+
+func (h TrustedHeaders) int64Header(key string) (int64, bool) {
+	v, err := strconv.ParseInt(h[key], 10, 64)
+	return v, err == nil
+}
+
+// AuthLogFields returns zap fields `auth_method`, `auth_jwt_lifetime_bucket`, `auth_jwt_iat` and
+// `auth_jwt_exp` for the authentication headers present, absent or unparseable ones are omitted.
+// Safe to call on nil.
+func (h TrustedHeaders) AuthLogFields() []zap.Field {
+	fields := make([]zap.Field, 0, 4)
+	if v := h.AuthMethod(); v != "" {
+		fields = append(fields, zap.String("auth_method", v))
+	}
+	if v := h.AuthJWTLifetimeBucket(); v != "" {
+		fields = append(fields, zap.String("auth_jwt_lifetime_bucket", v))
+	}
+	if v, ok := h.AuthJWTIssuedAt(); ok {
+		fields = append(fields, zap.Int64("auth_jwt_iat", v))
+	}
+	if v, ok := h.AuthJWTExpiresAt(); ok {
+		fields = append(fields, zap.Int64("auth_jwt_exp", v))
+	}
+	return fields
 }
 
 func (h TrustedHeaders) Get(key string) string {
